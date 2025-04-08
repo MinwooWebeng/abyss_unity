@@ -8,7 +8,7 @@ public class UIHandler : MonoBehaviour
     [SerializeField] private UIDocument uiDocument;
     [SerializeField] private Executor executor;
 
-    public Func<string> GetContentSpawnPos;
+    public Func<UnityEngine.Transform> GetContentSpawnPos;
 
     private VisualElement root;
     private TextField addressBar;
@@ -69,6 +69,7 @@ public class UIHandler : MonoBehaviour
             executor.ConnectPeer(conn_addr);
             return;
         }
-        executor.LoadContent(address);
+        var transform = GetContentSpawnPos();
+        executor.LoadContent(address, transform.position, transform.rotation);
     }
 }

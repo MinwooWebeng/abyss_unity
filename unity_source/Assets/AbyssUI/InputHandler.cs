@@ -46,8 +46,7 @@ public class InputHandler : MonoBehaviour
         mainReturnAction.performed += OnMainReturn;
 
         uiHandler.GetContentSpawnPos = ()=>{
-            var pos = cameraMover.transform.position;
-            return pos.x + "," + pos.y + "," + pos.z;
+            return cameraMover.transform;
         };
     }
     void OnEnable()

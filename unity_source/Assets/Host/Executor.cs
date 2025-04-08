@@ -1,8 +1,6 @@
 using AbyssCLI.ABI;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using UnityEngine;
 
 public class Executor : MonoBehaviour
@@ -27,9 +25,9 @@ public class Executor : MonoBehaviour
     {
         _abyss_host.CallFunc.MoveWorld(url);
     }
-    public void LoadContent(string url)
+    public void LoadContent(string url, UnityEngine.Vector3 pos, UnityEngine.Quaternion rot)
     {
-        _abyss_host.CallFunc.ShareContent(url);
+        _abyss_host.CallFunc.ShareContent(url, new Vec3 { X = pos.x, Y = pos.y, Z = pos.z }, new Vec4 { W = rot.w, X = rot.x, Y = rot.y, Z = rot.z });
     }
     public void ConnectPeer(string aurl)
     {
@@ -236,7 +234,8 @@ public class Executor : MonoBehaviour
     }
     private void ElemSetPos(RenderAction.Types.ElemSetPos args)
     {
-        _game_objects[args.ElementId].transform.localPosition = new Vector3((float)args.Pos.X, (float)args.Pos.Y, (float)args.Pos.Z);
+        _game_objects[args.ElementId].transform.localPosition = new Vector3(args.Pos.X, args.Pos.Y, args.Pos.Z);
+        _game_objects[args.ElementId].transform.localRotation = new Quaternion(args.Rot.X, args.Rot.Y, args.Rot.Z, args.Rot.W);
     }
     private void CreateImage(RenderAction.Types.CreateImage args)
     {
@@ -274,8 +273,8 @@ public class Executor : MonoBehaviour
             case AnyVal.ValOneofCase.Vec3:
                 mat.UnityMaterial.SetVector(args.ParamName, new UnityEngine.Vector3((float)args.Param.Vec3.X, (float)args.Param.Vec3.Y, (float)args.Param.Vec3.Z));
                 break;
-            case AnyVal.ValOneofCase.Quat:
-                mat.UnityMaterial.SetVector(args.ParamName, new UnityEngine.Vector4((float)args.Param.Quat.A, (float)args.Param.Quat.B, (float)args.Param.Quat.C, (float)args.Param.Quat.D));
+            case AnyVal.ValOneofCase.Vec4:
+                mat.UnityMaterial.SetVector(args.ParamName, new UnityEngine.Vector4((float)args.Param.Vec4.W, (float)args.Param.Vec4.X, (float)args.Param.Vec4.Y, (float)args.Param.Vec4.Z));
                 break;
             default:
                 throw new NotImplementedException();

@@ -39,13 +39,13 @@ public class Executor : MonoBehaviour
 #if UNITY_EDITOR
 #else
         // Get the directory of the executable
-        string exeDirectory = Directory.GetParent(Application.dataPath).FullName;
+        string exeDirectory = System.IO.Directory.GetParent(Application.dataPath).FullName;
 
         // Define the log file path in the same directory as the executable
-        var logFilePath = Path.Combine(exeDirectory, "log_" + DateTime.Now.ToString("HH_mm_ss"));
+        var logFilePath = System.IO.Path.Combine(exeDirectory, "log_" + DateTime.Now.ToString("HH_mm_ss"));
 
         // Open the file for writing
-        logWriter = new StreamWriter(logFilePath)
+        logWriter = new System.IO.StreamWriter(logFilePath)
         {
             AutoFlush = true // Auto flush so data is written immediately to the file
         }; // 'true' to append to the file if it exists
@@ -234,8 +234,7 @@ public class Executor : MonoBehaviour
     }
     private void ElemSetPos(RenderAction.Types.ElemSetPos args)
     {
-        _game_objects[args.ElementId].transform.localPosition = new Vector3(args.Pos.X, args.Pos.Y, args.Pos.Z);
-        _game_objects[args.ElementId].transform.localRotation = new Quaternion(args.Rot.X, args.Rot.Y, args.Rot.Z, args.Rot.W);
+        _game_objects[args.ElementId].transform.SetLocalPositionAndRotation(new Vector3(args.Pos.X, args.Pos.Y, args.Pos.Z), new Quaternion(args.Rot.X, args.Rot.Y, args.Rot.Z, args.Rot.W));
     }
     private void CreateImage(RenderAction.Types.CreateImage args)
     {
@@ -348,7 +347,7 @@ public class Executor : MonoBehaviour
     //logger
 #if UNITY_EDITOR
 #else
-    private StreamWriter logWriter;
+    private System.IO.StreamWriter logWriter;
 
     // This will be called whenever a log message is generated
     private void LogToFile(string logString, string stackTrace, LogType type)

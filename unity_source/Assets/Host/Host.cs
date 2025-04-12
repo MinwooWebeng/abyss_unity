@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
+using UnityEngine;
 
 namespace AbyssEngine
 {
@@ -17,7 +18,6 @@ namespace AbyssEngine
         private readonly Thread _error_reader_th;
         public Host(string root_key_path)
         {
-            //read root key from file
             byte[] root_key;
             try
             {
@@ -98,7 +98,13 @@ namespace AbyssEngine
             _error_reader_th.Start();
 
             //initialize host
-            CallFunc.Init(Google.Protobuf.ByteString.CopyFrom(root_key));
+            CallFunc.Init(Google.Protobuf.ByteString.CopyFrom(root_key), Path.GetFileNameWithoutExtension(root_key_path));
+
+            //#if UNITY_EDITOR
+            //            CallFunc.Init(Google.Protobuf.ByteString.CopyFrom(root_key), "editor");
+            //#else
+            //            CallFunc.Init(Google.Protobuf.ByteString.CopyFrom(root_key), "build");
+            //#endif
             IsValid = true;
         }
         public void Close()

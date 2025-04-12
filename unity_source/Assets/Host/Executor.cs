@@ -1,12 +1,11 @@
 using AbyssCLI.ABI;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class Executor : MonoBehaviour
 {
-    [SerializeField]
-    private string root_key_path = "root_key.pem";
     [SerializeField]
     private GameObject objHolder;
     [SerializeField]
@@ -53,13 +52,6 @@ public class Executor : MonoBehaviour
         // Subscribe to the log message event
         Application.logMessageReceived += LogToFile;
 #endif
-        _abyss_host = new AbyssEngine.Host(root_key_path);
-        if (!_abyss_host.IsValid)
-        {
-            Debug.LogError("failed to open abyss host");
-            executeActions = false;
-        }
-
         _game_objects = new();
         _components = new();
 
@@ -70,6 +62,22 @@ public class Executor : MonoBehaviour
         _game_objects[0] = root;
 
         nil_root.SetActive(false);
+
+        //read root key from file
+        string[] pemFiles = Directory.GetFiles(".", "*.pem", SearchOption.TopDirectoryOnly);
+        if (pemFiles.Length == 0)
+        {
+            Debug.LogError("no user key found");
+            executeActions = false;
+            return;
+        }
+
+        _abyss_host = new AbyssEngine.Host(pemFiles[0]);
+        if (!_abyss_host.IsValid)
+        {
+            Debug.LogError("failed to open abyss host");
+            executeActions = false;
+        }
     }
     void OnDisable()
     {

@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -15,10 +14,12 @@ public class UIHandler : MonoBehaviour
     private Label localAddrLabel;
     private TextField sub_addressBar;
     private Label extraLabel; //TODO
+    private VisualElement itemBar;
     void Awake()
     {
         root = uiDocument.rootVisualElement;
-        addressBar = root.Query<VisualElement>("background").First().Query<TextField>("address-bar").First();
+
+        addressBar = UQueryExtensions.Q<TextField>(root, "address-bar");
         addressBar.RegisterCallback<KeyDownEvent>((x) =>
         {
             if (x.keyCode == KeyCode.Return)
@@ -26,15 +27,8 @@ public class UIHandler : MonoBehaviour
                 AddressBarSubmit(addressBar.value);
             }
         });
-        localAddrLabel = root.Query<VisualElement>("background").First().Query<Label>("info").First();
-        if (localAddrLabel == null)
-        {
-            Debug.LogError("addr label not found!");
-        }
 
-        // Define the log file path in the same directory as the executable
-        executor.SetLocalAddrCallback = (addr) => { localAddrLabel.text = addr; };
-        sub_addressBar = root.Query<VisualElement>("background").First().Query<TextField>("sub-address-bar").First();
+        sub_addressBar = UQueryExtensions.Q<TextField>(root, "sub-address-bar");
         sub_addressBar.RegisterCallback<KeyDownEvent>((x) =>
         {
             if (x.keyCode == KeyCode.Return)
@@ -43,8 +37,26 @@ public class UIHandler : MonoBehaviour
             }
         });
 
-        extraLabel = root.Query<VisualElement>("background").First().Query<Label>("info-more").First();
+        localAddrLabel = UQueryExtensions.Q<Label>(root, "info");
+        if (localAddrLabel == null)
+        {
+            Debug.LogError("addr label not found!");
+        }
+        executor.SetLocalAddrCallback = (addr) => { localAddrLabel.text = addr; };
+
+        extraLabel = UQueryExtensions.Q<Label>(root, "info-more");
+        if (extraLabel == null)
+        {
+            Debug.LogError("additional info label not found!");
+        }
         executor.SetAdditionalInfoCallback = (info) => { extraLabel.text = info; };
+
+        itemBar = UQueryExtensions.Q(root, "itembar");
+        if (itemBar == null)
+        {
+            Debug.LogError("item bar not found!");
+        }
+
         Deactivate();
     }
     public void Activate()
@@ -71,5 +83,12 @@ public class UIHandler : MonoBehaviour
         }
         var transform = GetContentSpawnPos();
         executor.LoadContent(address, transform.position, transform.rotation);
+        AddItemElement();
+    }
+    private void AddItemElement()
+    {
+        VisualElement newElement = new();
+        newElement.AddToClassList("item-icon"); // Assigns a CSS-like class tag
+        itemBar.Add(newElement);
     }
 }

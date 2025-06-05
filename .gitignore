@@ -1,0 +1,7 @@
+*.dll
+*.exe
+*.pdb
+*.json
+*.txt
+*.pem
+*.meta

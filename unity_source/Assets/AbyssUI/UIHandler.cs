@@ -82,12 +82,19 @@ public class UIHandler : MonoBehaviour
             return;
         }
         var transform = GetContentSpawnPos();
-        executor.LoadContent(address, transform.position, transform.rotation);
-        AddItemElement();
+        var uuid = Guid.NewGuid();
+        executor.ShareContent(uuid, address, transform.position, transform.rotation);
+        AddItemElement(uuid);
     }
-    private void AddItemElement()
+    private void AddItemElement(Guid uuid)
     {
-        VisualElement newElement = new();
+        Debug.Log("adding icon!");
+        ItemIcon newElement = new(uuid);
+        newElement.RegisterCloseCallback(() =>
+        {
+            executor.UnshareContent(uuid);
+            Debug.Log("icon close callback; TODO: retrieve the content");
+        });
         newElement.AddToClassList("item-icon"); // Assigns a CSS-like class tag
         itemBar.Add(newElement);
     }

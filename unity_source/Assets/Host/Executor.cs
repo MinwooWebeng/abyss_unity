@@ -1,7 +1,9 @@
 using AbyssCLI.ABI;
+using Google.Protobuf;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 public class Executor : MonoBehaviour
@@ -24,9 +26,13 @@ public class Executor : MonoBehaviour
     {
         _abyss_host.CallFunc.MoveWorld(url);
     }
-    public void LoadContent(string url, UnityEngine.Vector3 pos, UnityEngine.Quaternion rot)
+    public void ShareContent(Guid uuid, string url, UnityEngine.Vector3 pos, UnityEngine.Quaternion rot)
     {
-        _abyss_host.CallFunc.ShareContent(url, new Vec3 { X = pos.x, Y = pos.y, Z = pos.z }, new Vec4 { W = rot.w, X = rot.x, Y = rot.y, Z = rot.z });
+        _abyss_host.CallFunc.ShareContent(ByteString.CopyFrom(uuid.ToByteArray()), url, new Vec3 { X = pos.x, Y = pos.y, Z = pos.z }, new Vec4 { W = rot.w, X = rot.x, Y = rot.y, Z = rot.z });
+    }
+    public void UnshareContent(Guid uuid)
+    {
+        _abyss_host.CallFunc.UnshareContent(ByteString.CopyFrom(uuid.ToByteArray()));
     }
     public void ConnectPeer(string aurl)
     {

@@ -42,23 +42,28 @@ public partial class Executor
         GameObject.Destroy(_game_objects[args.ElementId]);
         _game_objects.Remove(args.ElementId);
 
-        uiHandler.LocalItemSection.RemoveItem(args.ElementId);
-        uiHandler.MemberItemSection.RemoveItem(args.ElementId);
+        if (uiHandler.MemberItemSection.IsMemberItem(args.ElementId))
+            uiHandler.MemberItemSection.RemoveItem(args.ElementId);
+        else
+            uiHandler.LocalItemSection.RemoveItem(args.ElementId);
     }
     private void ItemSetIcon(RenderAction.Types.ItemSetIcon args)
     {
         var component = (AbyssEngine.Component.Image)(_components[args.ImageId]);
         var icon = component.UnityTexture2D;
-        uiHandler.LocalItemSection.UpdateIcon(args.ElementId, icon);
-        uiHandler.MemberItemSection.UpdateIcon(args.ElementId, icon);
+
+        if (uiHandler.MemberItemSection.IsMemberItem(args.ElementId))
+            uiHandler.MemberItemSection.UpdateIcon(args.ElementId, icon);
+        else
+            uiHandler.LocalItemSection.UpdateIcon(args.ElementId, icon);
     }
     private void MemberInfo(RenderAction.Types.MemberInfo args)
     {
-
+        uiHandler.MemberItemSection.CreateMember(args.PeerHash);
     }
     private void MemberLeave(RenderAction.Types.MemberLeave args)
     {
-
+        uiHandler.MemberItemSection.RemoveMember(args.PeerHash);
     }
     private void CreateImage(RenderAction.Types.CreateImage args)
     {

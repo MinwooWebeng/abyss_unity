@@ -16,13 +16,17 @@ public class MemberItemSection
         this.defaultIcon = defaultIcon;
         element_id_to_sharer = new();
     }
+    public bool IsMemberItem(int element_id)
+    {
+        return element_id_to_sharer.ContainsKey(element_id);
+    }
+    public void CreateMember(string peer_hash)
+    {
+        remoteItems[peer_hash] = new();
+    }
     public void CreateItem(string peer_hash, int element_id)
     {
-        if (!remoteItems.TryGetValue(peer_hash, out Dictionary<int, Texture2D> itemdict))
-        {
-            itemdict = new();
-            remoteItems[peer_hash] = itemdict;
-        }
+        var itemdict = remoteItems[peer_hash];
         itemdict[element_id] = defaultIcon;
         element_id_to_sharer[element_id] = peer_hash;
 
@@ -30,29 +34,22 @@ public class MemberItemSection
     }
     public void UpdateIcon(int element_id, Texture2D icon)
     {
-        if (!element_id_to_sharer.TryGetValue(element_id, out var peer_hash))
-            return;
-
+        var peer_hash = element_id_to_sharer[element_id];
         remoteItems[peer_hash][element_id] = icon;
 
         Show(current_showing_peer);
     }
     public void RemoveItem(int element_id)
     {
-        if (!element_id_to_sharer.TryGetValue(element_id, out var peer_hash))
-            return;
+        var peer_hash = element_id_to_sharer[element_id];
         remoteItems[peer_hash].Remove(element_id);
         element_id_to_sharer.Remove(element_id);
 
         Show(current_showing_peer);
     }
-    public void RemovePeer(string peer_hash)
+    public void RemoveMember(string peer_hash)
     {
-        if(!remoteItems.Remove(peer_hash, out var itemdict))
-        {
-            return;
-        }
-        
+        remoteItems.Remove(peer_hash, out var itemdict);
         foreach (var element_id in itemdict.Keys)
         {
             element_id_to_sharer.Remove(element_id);

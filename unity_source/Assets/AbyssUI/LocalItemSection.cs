@@ -26,9 +26,7 @@ public class LocalItemSection
     }
     public void UpdateIcon(int element_id, Texture2D icon)
     {
-        if (!items.TryGetValue(element_id, out var existing_item))
-            return;
-
+        var existing_item = items[element_id];
         existing_item.style.backgroundImage = icon;
         Show();
     }

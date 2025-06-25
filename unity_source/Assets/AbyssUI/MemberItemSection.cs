@@ -23,6 +23,8 @@ public class MemberItemSection
     public void CreateMember(string peer_hash)
     {
         remoteItems[peer_hash] = new();
+
+        Show(current_showing_peer);
     }
     public void CreateItem(string peer_hash, int element_id)
     {

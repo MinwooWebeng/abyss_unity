@@ -59,11 +59,13 @@ public partial class Executor
     }
     private void MemberInfo(RenderAction.Types.MemberInfo args)
     {
+        uiHandler.MemberProfileSection.CreateProfile(args.PeerHash);
         uiHandler.MemberItemSection.CreateMember(args.PeerHash);
     }
     private void MemberLeave(RenderAction.Types.MemberLeave args)
     {
         uiHandler.MemberItemSection.RemoveMember(args.PeerHash);
+        uiHandler.MemberProfileSection.RemoveProfile(args.PeerHash);
     }
     private void CreateImage(RenderAction.Types.CreateImage args)
     {

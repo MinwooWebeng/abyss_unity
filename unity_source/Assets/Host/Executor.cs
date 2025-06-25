@@ -294,9 +294,9 @@ public partial class Executor : MonoBehaviour
         switch(test_counter)
         {
             case 0:
-                uiHandler.LocalItemSection.CreateItem(this, 13, Guid.NewGuid());
-                uiHandler.MemberProfileSection.CreateProfile("somehash");
-                uiHandler.MemberItemSection.CreateItem("somehash", 17);
+                uiHandler.MemberProfileSection.CreateProfile("mem188");
+                uiHandler.MemberItemSection.CreateMember("mem188");
+                uiHandler.MemberItemSection.CreateItem("mem188", 17);
                 break;
             case 1:
                 break;

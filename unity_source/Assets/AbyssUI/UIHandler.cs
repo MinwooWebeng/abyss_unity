@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -7,9 +6,10 @@ public class UIHandler : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDocument;
     [SerializeField] private Executor executor;
-    [SerializeField] public Texture2D defaultItemIcon;
-    [SerializeField] public Texture2D defaultMemberProfile;
+    public Texture2D defaultItemIcon;
+    public Texture2D defaultMemberProfile;
 
+    //internals
     public Func<UnityEngine.Transform> GetContentSpawnPos;
 
     private VisualElement root;
@@ -17,6 +17,7 @@ public class UIHandler : MonoBehaviour
     private TextField sub_addressBar;
     private Label localAddrLabel;
     private Label extraLabel; //TODO
+    private TextField consoleInputBar;
 
     public LocalItemSection LocalItemSection;
     public MemberItemSection MemberItemSection;
@@ -47,7 +48,16 @@ public class UIHandler : MonoBehaviour
         localAddrLabel = UQueryExtensions.Q<Label>(root, "info");
 
         extraLabel = UQueryExtensions.Q<Label>(root, "info-more");
-        executor.SetAdditionalInfoCallback = (info) => { extraLabel.text = info; };
+        executor.SetAdditionalInfoCallback = (info) => { extraLabel.text = extraLabel.text + "\n" + info; };
+
+        consoleInputBar = UQueryExtensions.Q<TextField>(root, "console-input-bar");
+        consoleInputBar.RegisterCallback<KeyDownEvent>((x) =>
+        {
+            if (x.keyCode == KeyCode.Return)
+            {
+                WorldConsoleCommand(consoleInputBar.value);
+            }
+        });
 
         LocalItemSection = new(UQueryExtensions.Q(root, "itembar"), defaultItemIcon);
 
@@ -92,6 +102,10 @@ public class UIHandler : MonoBehaviour
         var transform = GetContentSpawnPos();
         var uuid = Guid.NewGuid();
         executor.ShareContent(uuid, address, transform.position, transform.rotation);
+    }
+    void WorldConsoleCommand(string command)
+    {
+        executor.ConsoleCommand(0, command);
     }
     public void SetLocalAddrText(string text)
     {

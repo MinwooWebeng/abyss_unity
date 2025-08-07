@@ -17,7 +17,7 @@ public partial class Executor : MonoBehaviour
     [SerializeField] private UIHandler uiHandler;
     [SerializeField] private bool runTest;
 
-    public Action<string> SetAdditionalInfoCallback = (string _) => { };
+    public Action<string> SetAdditionalInfoCallback = _ => { };
 
     private AbyssEngine.Host _abyss_host;
     public string _local_aurl;
@@ -37,6 +37,10 @@ public partial class Executor : MonoBehaviour
     public void UnshareContent(Guid uuid)
     {
         _abyss_host.CallFunc.UnshareContent(ByteString.CopyFrom(uuid.ToByteArray()));
+    }
+    public void ConsoleCommand(int element_id, string command)
+    {
+        _abyss_host.CallFunc.ConsoleInput(element_id, command);
     }
     public void ConnectPeer(string aurl)
     {
@@ -181,14 +185,19 @@ public partial class Executor : MonoBehaviour
     {
         switch (render_action.InnerCase)
         {
+        case RenderAction.InnerOneofCase.ConsolePrint: ConsolePrint(render_action.ConsolePrint); return;
         case RenderAction.InnerOneofCase.CreateElement: CreateElement(render_action.CreateElement); return;
         case RenderAction.InnerOneofCase.MoveElement: MoveElement(render_action.MoveElement); return;
         case RenderAction.InnerOneofCase.DeleteElement: DeleteElement(render_action.DeleteElement); return;
-        case RenderAction.InnerOneofCase.ElemSetPos: ElemSetPos(render_action.ElemSetPos); return;
+        case RenderAction.InnerOneofCase.ElemSetActive: ElemSetActive(render_action.ElemSetActive); return;
+        case RenderAction.InnerOneofCase.ElemSetTransform: ElemSetTransform(render_action.ElemSetTransform); return;
         case RenderAction.InnerOneofCase.CreateItem: CreateItem(render_action.CreateItem); return;
         case RenderAction.InnerOneofCase.DeleteItem: DeleteItem(render_action.DeleteItem); return;
+        case RenderAction.InnerOneofCase.ItemSetTitle: ItemSetTitle(render_action.ItemSetTitle); return;
         case RenderAction.InnerOneofCase.ItemSetIcon: ItemSetIcon(render_action.ItemSetIcon); return;
+        case RenderAction.InnerOneofCase.ItemAlert: ItemAlert(render_action.ItemAlert); return;
         case RenderAction.InnerOneofCase.MemberInfo: MemberInfo(render_action.MemberInfo); return;
+        case RenderAction.InnerOneofCase.MemberSetProfile: MemberSetProfile(render_action.MemberSetProfile); return;
         case RenderAction.InnerOneofCase.MemberLeave: MemberLeave(render_action.MemberLeave); return;
         case RenderAction.InnerOneofCase.CreateImage: CreateImage(render_action.CreateImage); return;
         case RenderAction.InnerOneofCase.DeleteImage: DeleteImage(render_action.DeleteImage); return;
@@ -206,7 +215,6 @@ public partial class Executor : MonoBehaviour
         case RenderAction.InnerOneofCase.LocalInfo: LocalInfo(render_action.LocalInfo); return;
         case RenderAction.InnerOneofCase.InfoContentShared: InfoContentShared(render_action.InfoContentShared); return;
         case RenderAction.InnerOneofCase.InfoContentDeleted: InfoContentDeleted(render_action.InfoContentDeleted); return;
-        case RenderAction.InnerOneofCase.ConsolePrint: ConsolePrint(render_action.ConsolePrint); return;
         default: Debug.LogError("Executor: invalid RenderAction: " + render_action.InnerCase); return;
         }
     }
@@ -214,14 +222,19 @@ public partial class Executor : MonoBehaviour
     {
         switch (render_action.InnerCase)
         {
+        case RenderAction.InnerOneofCase.ConsolePrint: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ConsolePrint)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.CreateElement: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.CreateElement)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.MoveElement: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.MoveElement)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.DeleteElement: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.DeleteElement)); renderlogwriter.Flush(); return;
-        case RenderAction.InnerOneofCase.ElemSetPos: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ElemSetPos)); renderlogwriter.Flush(); return;
+        case RenderAction.InnerOneofCase.ElemSetActive: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ElemSetActive)); renderlogwriter.Flush(); return;
+        case RenderAction.InnerOneofCase.ElemSetTransform: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ElemSetTransform)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.CreateItem: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.CreateItem)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.DeleteItem: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.DeleteItem)); renderlogwriter.Flush(); return;
+        case RenderAction.InnerOneofCase.ItemSetTitle: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ItemSetTitle)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.ItemSetIcon: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ItemSetIcon)); renderlogwriter.Flush(); return;
+        case RenderAction.InnerOneofCase.ItemAlert: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ItemAlert)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.MemberInfo: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.MemberInfo)); renderlogwriter.Flush(); return;
+        case RenderAction.InnerOneofCase.MemberSetProfile: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.MemberSetProfile)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.MemberLeave: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.MemberLeave)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.CreateImage: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.CreateImage)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.DeleteImage: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.DeleteImage)); renderlogwriter.Flush(); return;
@@ -239,7 +252,6 @@ public partial class Executor : MonoBehaviour
         case RenderAction.InnerOneofCase.LocalInfo: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.LocalInfo)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.InfoContentShared: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.InfoContentShared)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.InfoContentDeleted: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.InfoContentDeleted)); renderlogwriter.Flush(); return;
-        case RenderAction.InnerOneofCase.ConsolePrint: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ConsolePrint)); renderlogwriter.Flush(); return;
         default: renderlogwriter.WriteLine("Executor: invalid RenderAction: " + render_action.InnerCase); renderlogwriter.Flush(); return;
         }
     }

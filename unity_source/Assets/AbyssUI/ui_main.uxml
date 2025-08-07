@@ -20,5 +20,6 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:Label parse-escape-sequences="true" display-tooltip-when-elided="true" name="info-more" text="maybe some extra text will be here!" style="color: rgb(255, 255, 255);" />
+        <ui:TextField picking-mode="Ignore" value="abyst:local/home" name="console-input-bar" />
     </ui:VisualElement>
 </ui:UXML>

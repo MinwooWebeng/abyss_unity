@@ -7,6 +7,10 @@ public partial class Executor
 {
     private Dictionary<int, GameObject> _game_objects;
     private Dictionary<int, AbyssEngine.Component.IComponent> _components;
+    private void ConsolePrint(RenderAction.Types.ConsolePrint args)
+    {
+        SetAdditionalInfoCallback(args.Text);
+    }
     private void CreateElement(RenderAction.Types.CreateElement args)
     {
         GameObject newGO = new(args.ElementId.ToString());
@@ -20,18 +24,21 @@ public partial class Executor
     private void DeleteElement(RenderAction.Types.DeleteElement args)
     {
         GameObject.Destroy(_game_objects[args.ElementId]);
-        _game_objects.Remove(args.ElementId);
+        _ = _game_objects.Remove(args.ElementId);
     }
-    private void ElemSetPos(RenderAction.Types.ElemSetPos args)
+    private void ElemSetActive(RenderAction.Types.ElemSetActive args)
     {
-        _game_objects[args.ElementId].transform.SetLocalPositionAndRotation(new Vector3(args.Pos.X, args.Pos.Y, args.Pos.Z), new Quaternion(args.Rot.X, args.Rot.Y, args.Rot.Z, args.Rot.W));
+        _game_objects[args.ElementId].SetActive(args.Active);
+    }
+    private void ElemSetTransform(RenderAction.Types.ElemSetTransform args)
+    {
+        _game_objects[args.ElementId].transform.SetLocalPositionAndRotation(
+            new Vector3(args.Pos.X, args.Pos.Y, args.Pos.Z), 
+            new Quaternion(args.Rot.X, args.Rot.Y, args.Rot.Z, args.Rot.W)
+        );
     }
     private void CreateItem(RenderAction.Types.CreateItem args)
     {
-        GameObject newGO = new("I" + args.ElementId.ToString());
-        newGO.transform.SetParent(_game_objects[0].transform, false);
-        _game_objects[args.ElementId] = newGO;
-
         if (args.SharerHash == _local_hash)
             uiHandler.LocalItemSection.CreateItem(this, args.ElementId, new(args.Uuid.ToByteArray()));
         else
@@ -39,13 +46,18 @@ public partial class Executor
     }
     private void DeleteItem(RenderAction.Types.DeleteItem args)
     {
-        GameObject.Destroy(_game_objects[args.ElementId]);
-        _game_objects.Remove(args.ElementId);
-
         if (uiHandler.MemberItemSection.IsMemberItem(args.ElementId))
             uiHandler.MemberItemSection.RemoveItem(args.ElementId);
         else
             uiHandler.LocalItemSection.RemoveItem(args.ElementId);
+    }
+    private void ItemSetTitle(RenderAction.Types.ItemSetTitle args)
+    {
+        //TODO
+        //if (uiHandler.MemberItemSection.IsMemberItem(args.ElementId))
+        //    uiHandler.MemberItemSection.UpdateTitle(args.ElementId, args.Title);
+        //else
+        //    uiHandler.LocalItemSection.UpdateTitle(args.ElementId, args.Title);
     }
     private void ItemSetIcon(RenderAction.Types.ItemSetIcon args)
     {
@@ -57,10 +69,18 @@ public partial class Executor
         else
             uiHandler.LocalItemSection.UpdateIcon(args.ElementId, icon);
     }
+    private void ItemAlert(RenderAction.Types.ItemAlert args)
+    {
+        SetAdditionalInfoCallback(args.AlertMsg);
+    }
     private void MemberInfo(RenderAction.Types.MemberInfo args)
     {
         uiHandler.MemberProfileSection.CreateProfile(args.PeerHash);
         uiHandler.MemberItemSection.CreateMember(args.PeerHash);
+    }
+    private void MemberSetProfile(RenderAction.Types.MemberSetProfile args)
+    {
+        //TODO
     }
     private void MemberLeave(RenderAction.Types.MemberLeave args)
     {
@@ -173,9 +193,5 @@ public partial class Executor
     {
         soms.Remove(args.ContentUuid);
         SetAdditionalInfoCallback(string.Join("\n", soms.Values));
-    }
-    private void ConsolePrint(RenderAction.Types.ConsolePrint args)
-    {
-        SetAdditionalInfoCallback(args.Text);
     }
 }

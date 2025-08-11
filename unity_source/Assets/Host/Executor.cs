@@ -66,14 +66,14 @@ public partial class Executor : MonoBehaviour
         // Subscribe to the log message event
         Application.logMessageReceived += LogToFile;
 #endif
-        _game_objects = new();
+        _elements = new();
         _components = new();
 
         //root and nil-root object
         var nil_root = new GameObject("hidden");
         var root = new GameObject("root");
-        _game_objects[-1] = nil_root;
-        _game_objects[0] = root;
+        _elements[-1] = nil_root;
+        _elements[0] = root;
 
         nil_root.SetActive(false);
 
@@ -100,8 +100,8 @@ public partial class Executor : MonoBehaviour
     }
     void OnDisable()
     {
-        GameObject.Destroy(_game_objects[0]);
-        GameObject.Destroy(_game_objects[-1]);
+        GameObject.Destroy(_elements[0]);
+        GameObject.Destroy(_elements[-1]);
 
         foreach (var comp in _components)
         {
@@ -109,7 +109,7 @@ public partial class Executor : MonoBehaviour
         }
 
         _components = null;
-        _game_objects = null;
+        _elements = null;
 
         if (_abyss_host.IsValid)
         {
@@ -195,7 +195,11 @@ public partial class Executor : MonoBehaviour
         case RenderAction.InnerOneofCase.DeleteItem: DeleteItem(render_action.DeleteItem); return;
         case RenderAction.InnerOneofCase.ItemSetTitle: ItemSetTitle(render_action.ItemSetTitle); return;
         case RenderAction.InnerOneofCase.ItemSetIcon: ItemSetIcon(render_action.ItemSetIcon); return;
+        case RenderAction.InnerOneofCase.ItemSetActive: ItemSetActive(render_action.ItemSetActive); return;
         case RenderAction.InnerOneofCase.ItemAlert: ItemAlert(render_action.ItemAlert); return;
+        case RenderAction.InnerOneofCase.OpenStaticResource: OpenStaticResource(render_action.OpenStaticResource); return;
+        case RenderAction.InnerOneofCase.CloseResource: CloseResource(render_action.CloseResource); return;
+        case RenderAction.InnerOneofCase.CreateCompositeResource: CreateCompositeResource(render_action.CreateCompositeResource); return;
         case RenderAction.InnerOneofCase.MemberInfo: MemberInfo(render_action.MemberInfo); return;
         case RenderAction.InnerOneofCase.MemberSetProfile: MemberSetProfile(render_action.MemberSetProfile); return;
         case RenderAction.InnerOneofCase.MemberLeave: MemberLeave(render_action.MemberLeave); return;
@@ -232,7 +236,11 @@ public partial class Executor : MonoBehaviour
         case RenderAction.InnerOneofCase.DeleteItem: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.DeleteItem)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.ItemSetTitle: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ItemSetTitle)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.ItemSetIcon: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ItemSetIcon)); renderlogwriter.Flush(); return;
+        case RenderAction.InnerOneofCase.ItemSetActive: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ItemSetActive)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.ItemAlert: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.ItemAlert)); renderlogwriter.Flush(); return;
+        case RenderAction.InnerOneofCase.OpenStaticResource: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.OpenStaticResource)); renderlogwriter.Flush(); return;
+        case RenderAction.InnerOneofCase.CloseResource: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.CloseResource)); renderlogwriter.Flush(); return;
+        case RenderAction.InnerOneofCase.CreateCompositeResource: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.CreateCompositeResource)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.MemberInfo: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.MemberInfo)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.MemberSetProfile: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.MemberSetProfile)); renderlogwriter.Flush(); return;
         case RenderAction.InnerOneofCase.MemberLeave: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.MemberLeave)); renderlogwriter.Flush(); return;

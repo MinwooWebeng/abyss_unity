@@ -5,7 +5,7 @@ using System.IO.MemoryMappedFiles;
 using System.Linq;
 using UnityEngine;
 
-namespace AbyssEngine.Component
+namespace AbyssEngine.Resource
 {
     internal class StaticMesh : IComponent
     {

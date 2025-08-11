@@ -135,14 +135,27 @@ public void ItemSetTitle
 public void ItemSetIcon
 (
     int element_id,
-    int image_id
+    int media_id
 )
 => Write(new RenderAction()
 {
     ItemSetIcon = new ItemSetIcon
     {
         ElementId = element_id,
-        ImageId = image_id
+        MediaId = media_id
+    }
+});
+public void ItemSetActive
+(
+    int element_id,
+    bool active
+)
+=> Write(new RenderAction()
+{
+    ItemSetActive = new ItemSetActive
+    {
+        ElementId = element_id,
+        Active = active
     }
 });
 public void ItemAlert
@@ -156,6 +169,45 @@ public void ItemAlert
     {
         ElementId = element_id,
         AlertMsg = alert_msg
+    }
+});
+public void OpenStaticResource
+(
+    int resource_id,
+    MIME mime,
+    string file_name
+)
+=> Write(new RenderAction()
+{
+    OpenStaticResource = new OpenStaticResource
+    {
+        ResourceId = resource_id,
+        Mime = mime,
+        FileName = file_name
+    }
+});
+public void CloseResource
+(
+    int resource_id
+)
+=> Write(new RenderAction()
+{
+    CloseResource = new CloseResource
+    {
+        ResourceId = resource_id
+    }
+});
+public void CreateCompositeResource
+(
+    int media_id,
+    MediaType type
+)
+=> Write(new RenderAction()
+{
+    CreateCompositeResource = new CreateCompositeResource
+    {
+        MediaId = media_id,
+        Type = type
     }
 });
 public void MemberInfo

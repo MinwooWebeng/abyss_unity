@@ -1,4 +1,4 @@
-﻿namespace AbyssEngine.Component
+﻿namespace AbyssEngine.Resource
 {
     internal interface IComponent
     {

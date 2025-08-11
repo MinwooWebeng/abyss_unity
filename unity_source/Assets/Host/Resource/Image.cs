@@ -1,7 +1,7 @@
 ﻿using System.IO.MemoryMappedFiles;
 using UnityEngine;
 
-namespace AbyssEngine.Component
+namespace AbyssEngine.Resource
 {
     internal class Image : IComponent
     {

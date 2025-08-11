@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AbyssEngine.Component
+namespace AbyssEngine.Resource
 {
     internal class Material : IComponent
     {

@@ -3,14 +3,13 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
-using UnityEngine;
 
 namespace AbyssEngine
 {
     internal class Host
     {
         public readonly bool IsValid;
-        public readonly AbyssCLI.ABI.UIActionWriter CallFunc; //all protobuf message sender
+        public readonly UIActionWriter CallFunc; //all protobuf message sender
         private readonly System.Diagnostics.Process _host_proc;
         private readonly ConcurrentQueue<RenderAction> _render_action_queue;
         private readonly ConcurrentQueue<Exception> _error_queue;
@@ -36,7 +35,7 @@ namespace AbyssEngine
             _host_proc.StartInfo.RedirectStandardInput = true;
             _host_proc.StartInfo.RedirectStandardOutput = true;
             _host_proc.StartInfo.RedirectStandardError = true;
-            _host_proc.Start();
+            _ = _host_proc.Start();
 
             CallFunc = new AbyssCLI.ABI.UIActionWriter(
                 _host_proc.StandardInput.BaseStream

@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-public partial class Executor : MonoBehaviour
+public partial class ExecutorDepr : MonoBehaviour
 {
     [SerializeField] private GameObject objHolder;
     [SerializeField] private CommonShaderLoader commonShaderLoader;
@@ -19,7 +19,7 @@ public partial class Executor : MonoBehaviour
 
     public Action<string> SetAdditionalInfoCallback = _ => { };
 
-    private AbyssEngine.Host _abyss_host;
+    private AbyssEngine.HostDepr _abyss_host;
     public string _local_aurl;
     public string _local_hash;
     private Dictionary<string, string> soms = new(); //TODO: Deprecate
@@ -86,7 +86,7 @@ public partial class Executor : MonoBehaviour
             return;
         }
 
-        _abyss_host = new AbyssEngine.Host(pemFiles[0]);
+        _abyss_host = new AbyssEngine.HostDepr(pemFiles[0]);
         if (!_abyss_host.IsValid)
         {
             Debug.LogError("failed to open abyss host");

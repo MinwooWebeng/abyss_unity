@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 public class UIHandler : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDocument;
-    [SerializeField] private Executor executor;
+    [SerializeField] private ExecutorDepr executor;
     public Texture2D defaultItemIcon;
     public Texture2D defaultMemberProfile;
 

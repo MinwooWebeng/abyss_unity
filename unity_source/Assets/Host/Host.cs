@@ -1,133 +1,113 @@
-﻿using AbyssCLI.ABI;
+using AbyssCLI.ABI;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
+using UnityEngine;
 
-namespace AbyssEngine
+namespace Host
 {
-    internal class Host
+    /// <summary>
+    /// This host handles engine IO and action interpreting.
+    /// Construction and Dispose() must be called from Unity main thread.
+    /// It MUST be disposed.
+    /// </summary>
+    public partial class Host : IDisposable
     {
-        public readonly bool IsValid;
-        public readonly UIActionWriter CallFunc; //all protobuf message sender
-        private readonly System.Diagnostics.Process _host_proc;
-        private readonly ConcurrentQueue<RenderAction> _render_action_queue;
-        private readonly ConcurrentQueue<Exception> _error_queue;
-        private readonly Thread _reader_th;
-        private readonly Thread _error_reader_th;
-        public Host(string root_key_path)
+        private readonly EngineCom.EngineCom _engine_com;
+        private readonly Thread _rx_thread;
+        private readonly Thread _rx_stderr_thread;
+
+        public UIActionWriter Tx => _engine_com.Tx;
+        public readonly ConcurrentQueue<string> StderrQueue = new();
+        public readonly ConcurrentQueue<Action> RenderingActionQueue = new();
+        
+        //used in HostLogRequest.cs
+        private readonly StreamWriter _renderlogwriter;
+
+        //used in HostInterpretRequest.cs
+        private readonly Dictionary<int, GameObject> _elements = new(); // in current implementation, element is GameObject
+        GameObject _nil_root;
+        GameObject _root;
+        private readonly Dictionary<int, object> _resources = new(); // I have no idea what type can resources inherit in common.
+
+        public Host()
         {
-            byte[] root_key;
-            try
-            {
-                root_key = System.IO.File.ReadAllBytes(root_key_path);
-            }
-            catch
-            {
-                IsValid = false;
-                return;
-            }
-            //run host process with pipe
-            _host_proc = new System.Diagnostics.Process();
-            _host_proc.StartInfo.FileName = ".\\AbyssCLI\\AbyssCLI.exe";
-            _host_proc.StartInfo.UseShellExecute = false;
-            _host_proc.StartInfo.CreateNoWindow = true;
-            _host_proc.StartInfo.RedirectStandardInput = true;
-            _host_proc.StartInfo.RedirectStandardOutput = true;
-            _host_proc.StartInfo.RedirectStandardError = true;
-            _ = _host_proc.Start();
+            //find root key from current directory
+            string[] pemFiles = Directory.GetFiles(".", "*.pem", SearchOption.TopDirectoryOnly);
+            if (pemFiles.Length == 0)
+                throw new Exception("fatal:::no user key found");
 
-            CallFunc = new AbyssCLI.ABI.UIActionWriter(
-                _host_proc.StandardInput.BaseStream
-            )
-            {
-                AutoFlush = true
-            };
-            _render_action_queue = new();
-            _error_queue = new();
+            //main setup
+            _engine_com = new(pemFiles[0]);
+            _rx_thread = new(RxLoop);
+            _rx_stderr_thread = new(RxStdErrLoop);
 
-            _reader_th = new Thread(() =>
+            //logger setup
+            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string fileName = $"render_log{timestamp}.json";
+            _renderlogwriter = new(fileName);
+
+            //unity requirements setup
+            _nil_root = new GameObject("hidden");
+            _nil_root.SetActive(false);
+            _root = new GameObject("root");
+            _elements[-1] = _nil_root;
+            _elements[0] = _root;
+        }
+        public void Start()
+        {
+            _rx_thread.Start();
+            _rx_stderr_thread.Start();
+        }
+
+        private void RxLoop()
+        {
+            while(_engine_com.Rx.TryRead(out var render_action))
             {
                 try
                 {
-                    var reader = new BinaryReader(_host_proc.StandardOutput.BaseStream);
-                    while (true)
-                    {
-                        int length = reader.ReadInt32();
-                        if (length <= 0)
-                        {
-                            throw new Exception("invalid length message");
-                        }
-                        byte[] data = reader.ReadBytes(length);
-                        if (data.Length != length)
-                        {
-                            throw new Exception("invalid length message");
-                        }
-
-                        var message = RenderAction.Parser.ParseFrom(data);
-                        _render_action_queue.Enqueue(message);
-                    }
+                    LogRequest(render_action);
+                    InterpretRequest(render_action);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    if (e is not System.IO.EndOfStreamException)
-                        _error_queue.Enqueue(e);
+                    StderrQueue.Enqueue("fatal:::RxLoop throwed an error: " + ex.ToString());
                 }
-            });
-            _reader_th.Start();
-
-            _error_reader_th = new Thread(() =>
+            }
+        }
+        private void RxStdErrLoop()
+        {
+            while (true)
             {
                 try
                 {
-                    while (true)
-                    {
-                        var line = _host_proc.StandardError.ReadLine();
-                        if (line == null)
-                            return; //cerr closed.
-
-                        _error_queue.Enqueue(new Exception(line));
-                    }
+                    StderrQueue.Enqueue(_engine_com.StdErr.ReadLine());
                 }
-                catch (Exception e)
+                catch
                 {
-                    _error_queue.Enqueue(e);
+                    StderrQueue.Enqueue("===== stderr closed =====");
+                    return;
                 }
-            });
-            _error_reader_th.Start();
-
-            //initialize host
-            CallFunc.Init(Google.Protobuf.ByteString.CopyFrom(root_key), Path.GetFileNameWithoutExtension(root_key_path));
-
-            //#if UNITY_EDITOR
-            //            CallFunc.Init(Google.Protobuf.ByteString.CopyFrom(root_key), "editor");
-            //#else
-            //            CallFunc.Init(Google.Protobuf.ByteString.CopyFrom(root_key), "build");
-            //#endif
-            IsValid = true;
-        }
-        public void Close()
-        {
-            if (!_host_proc.HasExited)
-            {
-                _host_proc.Kill();
-                _host_proc.WaitForExit();
             }
+        }
 
-            _reader_th.Join();
-            _error_reader_th.Join();
-        }
-        public bool TryPopRenderAction(out RenderAction msg)
+        private bool _disposed;
+        public void Dispose()
         {
-            return _render_action_queue.TryDequeue(out msg);
-        }
-        public int GetLeftoverRenderActionCount()
-        {
-            return _render_action_queue.Count;
-        }
-        public bool TryPopException(out Exception e)
-        {
-            return _error_queue.TryDequeue(out e);
+            if (_disposed) return;
+            _disposed = true;
+
+            _engine_com.Stop();
+
+            _rx_thread.Join();
+            _rx_stderr_thread.Join();
+            _engine_com.Dispose();
+
+            GameObject.Destroy(_elements[-1]);
+            GameObject.Destroy(_elements[0]);
         }
     }
 }

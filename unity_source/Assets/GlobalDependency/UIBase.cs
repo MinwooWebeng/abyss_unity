@@ -1,15 +1,16 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class UIHandler : MonoBehaviour
+public class UIBase : MonoBehaviour
 {
+    private bool _is_active;
+
     [SerializeField] private UIDocument uiDocument;
-    [SerializeField] private ExecutorDepr executor;
     public Texture2D defaultItemIcon;
     public Texture2D defaultMemberProfile;
 
-    //internals
     public Func<UnityEngine.Transform> GetContentSpawnPos;
 
     private VisualElement root;
@@ -23,7 +24,16 @@ public class UIHandler : MonoBehaviour
     public MemberItemSection MemberItemSection;
     public MemberProfileSection MemberProfileSection;
 
-    void Awake()
+    //callback reservation
+    public Action<string> OnAddressBarSubmit;
+    public Action<string> OnSubAddressBarSubmit;
+    public Action<string> OnConsoleCommand;
+
+    //console
+    private LinkedList<string> _console_lines;
+    private bool _is_console_updated;
+
+    void OnEnable()
     {
         root = uiDocument.rootVisualElement;
 
@@ -32,7 +42,7 @@ public class UIHandler : MonoBehaviour
         {
             if (x.keyCode == KeyCode.Return)
             {
-                AddressBarSubmit(addressBar.value);
+                OnAddressBarSubmit(addressBar.value);
             }
         });
 
@@ -41,21 +51,20 @@ public class UIHandler : MonoBehaviour
         {
             if (x.keyCode == KeyCode.Return)
             {
-                SubAddressBarSubmit(sub_addressBar.value);
+                OnSubAddressBarSubmit(sub_addressBar.value);
             }
         });
 
         localAddrLabel = UQueryExtensions.Q<Label>(root, "info");
 
         extraLabel = UQueryExtensions.Q<Label>(root, "info-more");
-        executor.SetAdditionalInfoCallback = (info) => { extraLabel.text = extraLabel.text + "\n" + info; };
 
         consoleInputBar = UQueryExtensions.Q<TextField>(root, "console-input-bar");
         consoleInputBar.RegisterCallback<KeyDownEvent>((x) =>
         {
             if (x.keyCode == KeyCode.Return)
             {
-                WorldConsoleCommand(consoleInputBar.value);
+                OnConsoleCommand(consoleInputBar.value);
             }
         });
 
@@ -74,41 +83,50 @@ public class UIHandler : MonoBehaviour
             Debug.LogError("UI components not found!");
         }
 
+        OnAddressBarSubmit = (arg) => { };
+        OnSubAddressBarSubmit = (arg) => { };
+        OnConsoleCommand = (arg) => { };
+
+        _console_lines = new();
+        _is_console_updated = false;
+
         Deactivate();
+    }
+    private void Update()
+    {
+        if (_is_active && _is_console_updated)
+        {
+            extraLabel.text = string.Join("\n", _console_lines);
+            _is_console_updated = false;
+        }
+    }
+    void OnDisable()
+    {
+        OnAddressBarSubmit = null;
+        OnSubAddressBarSubmit = null;
+        OnConsoleCommand = null;
+
+        _console_lines = null;
     }
     public void Activate()
     {
+        _is_active = true;
         root.visible = true;
         addressBar.focusable = true;
     }
     public void Deactivate()
     {
+        _is_active = false;
         MemberItemSection.Hide();
         root.visible = false;
         addressBar.focusable = false;
     }
-    void AddressBarSubmit(string address)
+    public void AppendConsole(string line)
     {
-        executor.MoveWorld(address);
-    }
-    void SubAddressBarSubmit(string address)
-    {
-        if (address.StartsWith("connect "))
+        _ = _console_lines.AddLast(line);
+        if (_console_lines.Count == 100)
         {
-            var conn_addr = address["connect ".Length..];
-            executor.ConnectPeer(conn_addr);
-            return;
+            _console_lines.RemoveFirst();
         }
-        var transform = GetContentSpawnPos();
-        var uuid = Guid.NewGuid();
-        executor.ShareContent(uuid, address, transform.position, transform.rotation);
-    }
-    void WorldConsoleCommand(string command)
-    {
-        executor.ConsoleCommand(0, command);
-    }
-    public void SetLocalAddrText(string text)
-    {
-        localAddrLabel.text = text;
     }
 }

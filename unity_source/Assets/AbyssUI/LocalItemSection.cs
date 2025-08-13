@@ -14,27 +14,27 @@ public class LocalItemSection
         this.items = new();
         this.defaultIcon = defaultIcon;
     }
-    public void CreateItem(ExecutorDepr executor, int element_id, Guid uuid)
-    {
-        var item = new ItemIcon(uuid, defaultIcon);
-        items[element_id] = item;
-        item.RegisterCloseCallback(() =>
-        {
-            executor.UnshareContent(uuid);
-        });
-        Show();
-    }
-    public void UpdateIcon(int element_id, Texture2D icon)
-    {
-        var existing_item = items[element_id];
-        existing_item.style.backgroundImage = icon;
-        Show();
-    }
-    public void RemoveItem(int element_id)
-    {
-        items.Remove(element_id);
-        Show();
-    }
+    //public void CreateItem(ExecutorDepr executor, int element_id, Guid uuid)
+    //{
+    //    var item = new ItemIcon(uuid, defaultIcon);
+    //    items[element_id] = item;
+    //    item.RegisterCloseCallback(() =>
+    //    {
+    //        executor.UnshareContent(uuid);
+    //    });
+    //    Show();
+    //}
+    //public void UpdateIcon(int element_id, Texture2D icon)
+    //{
+    //    var existing_item = items[element_id];
+    //    existing_item.style.backgroundImage = icon;
+    //    Show();
+    //}
+    //public void RemoveItem(int element_id)
+    //{
+    //    items.Remove(element_id);
+    //    Show();
+    //}
     public void Show()
     {
         visualElement.Clear();

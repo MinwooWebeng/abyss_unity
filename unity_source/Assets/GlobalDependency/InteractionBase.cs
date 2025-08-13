@@ -1,11 +1,11 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class InputHandler : MonoBehaviour
+public class InteractionBase : MonoBehaviour
 {
     [SerializeField] private InputActionAsset actions;
 
-    [SerializeField] private UIHandler uiHandler;
+    [SerializeField] private UIBase uiHandler;
 
     [SerializeField] private TemporalCameraMover cameraMover;
 
@@ -19,7 +19,8 @@ public class InputHandler : MonoBehaviour
     //ui
     private InputAction mainReturnAction;
 
-    void Awake()
+    public Transform GetContentSpawnPos() => cameraMover.transform;
+void Awake()
     {
         //main
         viewAction = actions.FindActionMap("main").FindAction("view", throwIfNotFound: true);
@@ -44,10 +45,6 @@ public class InputHandler : MonoBehaviour
         mainReturnAction.Enable();
 
         mainReturnAction.performed += OnMainReturn;
-
-        uiHandler.GetContentSpawnPos = ()=>{
-            return cameraMover.transform;
-        };
     }
     void OnEnable()
     {

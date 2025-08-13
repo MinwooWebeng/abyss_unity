@@ -1,11 +1,8 @@
 using AbyssCLI.ABI;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
-using UnityEngine;
 
 namespace Host
 {
@@ -22,16 +19,9 @@ namespace Host
 
         public UIActionWriter Tx => _engine_com.Tx;
         public readonly ConcurrentQueue<string> StderrQueue = new();
-        public readonly ConcurrentQueue<Action> RenderingActionQueue = new();
         
         //used in HostLogRequest.cs
-        private readonly StreamWriter _renderlogwriter;
-
-        //used in HostInterpretRequest.cs
-        private readonly Dictionary<int, GameObject> _elements = new(); // in current implementation, element is GameObject
-        GameObject _nil_root;
-        GameObject _root;
-        private readonly Dictionary<int, object> _resources = new(); // I have no idea what type can resources inherit in common.
+        private readonly StreamWriter _render_log_writer;
 
         public Host()
         {
@@ -48,14 +38,7 @@ namespace Host
             //logger setup
             string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             string fileName = $"render_log{timestamp}.json";
-            _renderlogwriter = new(fileName);
-
-            //unity requirements setup
-            _nil_root = new GameObject("hidden");
-            _nil_root.SetActive(false);
-            _root = new GameObject("root");
-            _elements[-1] = _nil_root;
-            _elements[0] = _root;
+            _render_log_writer = new(fileName);
         }
         public void Start()
         {
@@ -105,9 +88,6 @@ namespace Host
             _rx_thread.Join();
             _rx_stderr_thread.Join();
             _engine_com.Dispose();
-
-            GameObject.Destroy(_elements[-1]);
-            GameObject.Destroy(_elements[0]);
         }
     }
 }

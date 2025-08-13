@@ -19,7 +19,8 @@ import sys
 
 ROOT_DIR      = Path(".").resolve()
 WRITER_FILE   = ROOT_DIR / "ABI" / "RenderActionWriter.cs"
-EXECUTOR_FILE = ROOT_DIR / "Executor.cs"
+INTERPRETER_FILE = ROOT_DIR / "HostInterpretRequest.cs"
+LOGGER_FILE = ROOT_DIR / "HostLogRequest.cs"
 METHOD_PREFIX = "public void "
 SWITCH_MARKER = "switch (render_action.InnerCase)"   # appears twice
 
@@ -49,11 +50,11 @@ def collect_writer_methods(path: Path) -> list[str]:
 def build_cases_call(methods: list[str]) -> list[str]:
     """`case X: X(render_action.X); return;` + default"""
     lines = [
-        f"        case RenderAction.InnerOneofCase.{m}: {m}(render_action.{m}); return;"
+        f"            case RenderAction.InnerOneofCase.{m}: RenderingActionQueue.Enqueue({m}(render_action.{m})); return;"
         for m in methods
     ]
     lines.append(
-        '        default: Debug.LogError("Executor: invalid RenderAction: " + '
+        '            default: StderrQueue.Enqueue("Executor: invalid RenderAction: " + '
         "render_action.InnerCase); return;"
     )
     return [ln + "\n" for ln in lines]
@@ -62,12 +63,12 @@ def build_cases_call(methods: list[str]) -> list[str]:
 def build_cases_log(methods: list[str]) -> list[str]:
     """`case X: X(render_action.X); return;` + default"""
     lines = [
-        f"        case RenderAction.InnerOneofCase.{m}: renderlogwriter.WriteLine(FormatFlatLogLine(render_action.{m})); renderlogwriter.Flush(); return;"
+        f"            case RenderAction.InnerOneofCase.{m}: _render_log_writer.WriteLine(FormatFlatLogLine(render_action.{m})); _render_log_writer.Flush(); return;"
         for m in methods
     ]
     lines.append(
-        '        default: renderlogwriter.WriteLine("Executor: invalid RenderAction: " + '
-        "render_action.InnerCase); renderlogwriter.Flush(); return;"
+        '            default: StderrQueue.Enqueue("Executor: invalid RenderAction: " + '
+        "render_action.InnerCase); return;"
     )
     return [ln + "\n" for ln in lines]
 
@@ -133,6 +134,53 @@ def patch_executor(path: Path, methods: list[str]) -> None:
     path.write_text("".join(result), encoding="utf-8")
     print(f"[done] Re-generated two switch-case blocks in {path}")
 
+# ----------------------------------------------------------------------
+# single patcher
+# ----------------------------------------------------------------------
+def replace_cases(path: Path, replacement: list[str]) -> None:
+    # find target file
+    if not path.is_file():
+        sys.exit(f"[error] {path} not found")
+
+    src = path.read_text(encoding="utf-8").splitlines(keepends=True)
+
+    result = []
+    open_idx = 0
+    close_idx = None
+
+    # locate switch statement
+    while SWITCH_MARKER not in src[open_idx]:
+        open_idx += 1
+        if open_idx >= len(src):
+            sys.exit("[error] switch statement not found")
+
+    # locate opening brace
+    while "{" not in src[open_idx]:
+        open_idx += 1
+        if open_idx >= len(src):
+            sys.exit("[error] opening brace for switch not found")
+    # now, open_idx is the index of opening brace line.
+
+    # find closing brace, accounting for nested scopes
+    depth = 0
+    for i in range(open_idx, len(src)):
+        depth += src[i].count("{") - src[i].count("}")
+        if depth == 0:
+            close_idx = i
+            break
+    if close_idx is None:
+        sys.exit("[error] closing brace for switch not found")
+
+    # append result
+    result += src[0:open_idx + 1]
+    result += replacement
+    result += src[close_idx:]
+
+    path.write_text("".join(result), encoding="utf-8")
+    print(f"Re-generated switch-case block in {path}")
+
 
 if __name__ == "__main__":
-    patch_executor(EXECUTOR_FILE, collect_writer_methods(WRITER_FILE))
+    methods = collect_writer_methods(WRITER_FILE)
+    replace_cases(INTERPRETER_FILE, build_cases_call(methods))
+    replace_cases(LOGGER_FILE, build_cases_log(methods))

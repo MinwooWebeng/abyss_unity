@@ -63,7 +63,7 @@ def build_cases_call(methods: list[str]) -> list[str]:
 def build_cases_log(methods: list[str]) -> list[str]:
     """`case X: X(render_action.X); return;` + default"""
     lines = [
-        f"            case RenderAction.InnerOneofCase.{m}: _render_log_writer.WriteLine(FormatFlatLogLine(render_action.{m})); _render_log_writer.Flush(); return;"
+        f"            case RenderAction.InnerOneofCase.{m}: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.{m})); return;"
         for m in methods
     ]
     lines.append(

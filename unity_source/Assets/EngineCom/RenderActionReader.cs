@@ -12,23 +12,14 @@ namespace EngineCom
             _reader = new(stream);
         }
 
-        public bool TryRead(out RenderAction result)
+        public RenderAction Read()
         {
-            try
-            {
-                int length = _reader.ReadInt32();
-                if (length <= 0)
-                    throw new Exception("invalid length message");
+            int length = _reader.ReadInt32();
+            if (length <= 0)
+                throw new Exception("invalid length message");
 
-                byte[] data = _reader.ReadBytes(length);
-                result = RenderAction.Parser.ParseFrom(data);
-                return true;
-            }
-            catch
-            {
-                result = null;
-                return false;
-            }
+            byte[] data = _reader.ReadBytes(length);
+            return RenderAction.Parser.ParseFrom(data);
         }
     }
 }

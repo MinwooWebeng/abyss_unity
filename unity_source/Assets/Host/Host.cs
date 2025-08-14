@@ -19,9 +19,6 @@ namespace Host
 
         public UIActionWriter Tx => _engine_com.Tx;
         public readonly ConcurrentQueue<string> StderrQueue = new();
-        
-        //used in HostLogRequest.cs
-        private readonly StreamWriter _render_log_writer;
 
         public Host()
         {
@@ -34,11 +31,6 @@ namespace Host
             _engine_com = new(pemFiles[0]);
             _rx_thread = new(RxLoop);
             _rx_stderr_thread = new(RxStdErrLoop);
-
-            //logger setup
-            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            string fileName = $"render_log{timestamp}.json";
-            _render_log_writer = new(fileName);
         }
         public void Start()
         {
@@ -48,16 +40,18 @@ namespace Host
 
         private void RxLoop()
         {
-            while(_engine_com.Rx.TryRead(out var render_action))
+            while(true)
             {
                 try
                 {
+                    var render_action = _engine_com.Rx.Read();
                     LogRequest(render_action);
                     InterpretRequest(render_action);
                 }
                 catch (Exception ex)
                 {
                     StderrQueue.Enqueue("fatal:::RxLoop throwed an error: " + ex.ToString());
+                    return;
                 }
             }
         }
@@ -67,7 +61,8 @@ namespace Host
             {
                 try
                 {
-                    StderrQueue.Enqueue(_engine_com.StdErr.ReadLine());
+                    var err_msg = _engine_com.StdErr.ReadLine() ?? throw new Exception("StdErr.ReadLine() returned null");
+                    StderrQueue.Enqueue(err_msg);
                 }
                 catch
                 {

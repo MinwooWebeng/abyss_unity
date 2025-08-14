@@ -14,6 +14,7 @@ public class LocalItemSection
         this.items = new();
         this.defaultIcon = defaultIcon;
     }
+    //TODO: renewal
     //public void CreateItem(ExecutorDepr executor, int element_id, Guid uuid)
     //{
     //    var item = new ItemIcon(uuid, defaultIcon);

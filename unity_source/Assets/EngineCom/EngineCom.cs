@@ -1,7 +1,7 @@
 using AbyssCLI.ABI;
 using System;
 using System.IO;
-using System.Threading;
+using UnityEngine;
 
 namespace EngineCom
 {
@@ -9,9 +9,9 @@ namespace EngineCom
     {
         
         private readonly System.Diagnostics.Process _host_proc;
-        public readonly UIActionWriter Tx;
-        public readonly RenderActionReader Rx;
-        public readonly StreamReader StdErr;
+        public UIActionWriter Tx { get; private set; }
+        public RenderActionReader Rx { get; private set; }
+        public StreamReader StdErr { get; private set; }
 
         const string EngineBinaryPath = ".\\AbyssCLI\\AbyssCLI.exe";
 
@@ -49,21 +49,17 @@ namespace EngineCom
         }
 
         private bool _disposed;
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
         {
             if (_disposed) return;
 
+            _host_proc.Dispose();
+            Tx = null;
+            Rx = null;
+            StdErr.Dispose();
+            StdErr = null;
+
             _disposed = true;
-            if (disposing)
-            {
-                StdErr.Dispose();
-            }
         }
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-        ~EngineCom() => Dispose(disposing: false);
     }
 }

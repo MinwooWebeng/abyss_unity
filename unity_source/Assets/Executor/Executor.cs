@@ -6,15 +6,17 @@ using UnityEngine;
 /// </summary>
 public class Executor : MonoBehaviour
 {
-    public RendererBase RendererBase;
-    public UIBase UIBase;
+    public GlobalDependency.RendererBase RendererBase;
+    public GlobalDependency.UIBase UIBase;
+    public GlobalDependency.InteractionBase InteractionBase;
     private Host.Host _host;
 
     void OnEnable()
     {
+        GlobalDependency.Logger.Init();
         _host = new();
 
-        _host.InjectExecutorTarg(RendererBase, UIBase);
+        _host.InjectExecutorTarg(RendererBase, UIBase, InteractionBase);
         _host.Start();
     }
     void Update()
@@ -24,6 +26,11 @@ public class Executor : MonoBehaviour
             (DateTime.Now - time_begin) < TimeSpan.FromMilliseconds(10))
         {
             action();
+        }
+        while (_host.StderrQueue.TryDequeue(out var err_msg) &&
+            (DateTime.Now - time_begin) < TimeSpan.FromMilliseconds(16))
+        {
+            UIBase.AppendConsole("Engine:::StdErr>> " + err_msg);
         }
     }
     void OnDisable()

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,10 +11,12 @@ namespace GlobalDependency
     {
         private bool _is_active;
 
+        //editor
         [SerializeField] private UIDocument uiDocument;
         public Texture2D defaultItemIcon;
         public Texture2D defaultMemberProfile;
 
+        //OnEnable
         private VisualElement root;
         private TextField addressBar;
         private TextField sub_addressBar;
@@ -21,14 +24,14 @@ namespace GlobalDependency
         private Label extraLabel; //TODO
         private TextField consoleInputBar;
 
-        public LocalItemSection LocalItemSection;
-        public MemberItemSection MemberItemSection;
-        public MemberProfileSection MemberProfileSection;
+        [HideInInspector] public LocalItemSection LocalItemSection;
+        [HideInInspector] public MemberItemSection MemberItemSection;
+        [HideInInspector] public MemberProfileSection MemberProfileSection;
 
         //callback reservation
-        public Action<string> OnAddressBarSubmit;
-        public Action<string> OnSubAddressBarSubmit;
-        public Action<string> OnConsoleCommand;
+        [HideInInspector] public Action<string> OnAddressBarSubmit;
+        [HideInInspector] public Action<string> OnSubAddressBarSubmit;
+        [HideInInspector] public Action<string> OnConsoleCommand;
 
         //console
         private LinkedList<string> _console_lines;
@@ -36,6 +39,7 @@ namespace GlobalDependency
 
         void OnEnable()
         {
+            //locate all elements
             root = uiDocument.rootVisualElement;
 
             addressBar = UQueryExtensions.Q<TextField>(root, "address-bar");
@@ -68,7 +72,7 @@ namespace GlobalDependency
             MemberItemSection = new(UQueryExtensions.Q(root, "memberitemsection"), defaultItemIcon);
 
             MemberProfileSection = new(UQueryExtensions.Q(root, "memberprofilesection"), defaultMemberProfile);
-            MemberProfileSection.RegisterClickCallback((string peer_hash) =>
+            MemberProfileSection.RegisterClickCallback(peer_hash =>
             {
                 MemberItemSection.Show(peer_hash);
             });
@@ -78,6 +82,7 @@ namespace GlobalDependency
                 Debug.LogError("UI components not found!");
             }
 
+            //default event handler - this should not be called.
             OnAddressBarSubmit = (arg) => { };
             OnSubAddressBarSubmit = (arg) => { };
             OnConsoleCommand = (arg) => { };
@@ -112,6 +117,17 @@ namespace GlobalDependency
         }
         void OnDisable()
         {
+            root = null;
+            addressBar = null;
+            sub_addressBar = null;
+            localAddrLabel = null;
+            extraLabel = null;
+            consoleInputBar = null;
+
+            LocalItemSection = null;
+            MemberItemSection = null;
+            MemberProfileSection = null;
+
             OnAddressBarSubmit = null;
             OnSubAddressBarSubmit = null;
             OnConsoleCommand = null;
@@ -139,6 +155,10 @@ namespace GlobalDependency
                 _console_lines.RemoveFirst();
             }
             _is_console_updated = true;
+        }
+        public void SetWorldIcon(Texture2D texture)
+        {
+            root.style.backgroundImage = texture;
         }
     }
 }

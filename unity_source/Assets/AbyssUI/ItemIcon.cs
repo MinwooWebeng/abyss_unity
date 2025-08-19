@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 public class ItemIcon : VisualElement
 {
     public readonly Guid uuid;
-    private Action OnClose;
+    public Action<Guid> OnClose;
     public ItemIcon(Guid uuid, Texture2D icon)
     {
         this.uuid = uuid;
@@ -18,12 +18,8 @@ public class ItemIcon : VisualElement
 
         closeButton.RegisterCallback<ClickEvent>(evt =>
         {
-            OnClose();
+            OnClose(uuid);
             closeButton.RemoveFromHierarchy();
         });
-    }
-    public void RegisterCloseCallback(Action callback)
-    {
-        OnClose = callback;
     }
 }

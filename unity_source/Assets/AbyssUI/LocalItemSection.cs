@@ -5,43 +5,33 @@ using UnityEngine.UIElements;
 
 public class LocalItemSection
 {
-    public readonly VisualElement visualElement;
-    private readonly Dictionary<int, ItemIcon> items;
-    private readonly Texture2D defaultIcon;
-    public LocalItemSection(VisualElement visualElement, Texture2D defaultIcon)
+    [HideInInspector] public readonly VisualElement _icon_container;
+    private readonly Dictionary<int, ItemIcon> _items;
+    private readonly Texture2D _default_icon;
+    public Action<Guid> OnCloseCallback;
+    public LocalItemSection(VisualElement visual_element, Texture2D default_icon)
     {
-        this.visualElement = visualElement;
-        this.items = new();
-        this.defaultIcon = defaultIcon;
+        _icon_container = visual_element;
+        _items = new();
+        _default_icon = default_icon;
     }
-    //TODO: renewal
-    //public void CreateItem(ExecutorDepr executor, int element_id, Guid uuid)
-    //{
-    //    var item = new ItemIcon(uuid, defaultIcon);
-    //    items[element_id] = item;
-    //    item.RegisterCloseCallback(() =>
-    //    {
-    //        executor.UnshareContent(uuid);
-    //    });
-    //    Show();
-    //}
-    //public void UpdateIcon(int element_id, Texture2D icon)
-    //{
-    //    var existing_item = items[element_id];
-    //    existing_item.style.backgroundImage = icon;
-    //    Show();
-    //}
-    //public void RemoveItem(int element_id)
-    //{
-    //    items.Remove(element_id);
-    //    Show();
-    //}
-    public void Show()
+    public void AddItem(int element_id, Guid uuid)
     {
-        visualElement.Clear();
-        foreach (var item in items.Values)
+        var item = new ItemIcon(uuid, _default_icon)
         {
-            visualElement.Add(item);
-        }
+            OnClose = OnCloseCallback,
+        };
+        _items[element_id] = item;
+        _icon_container.Add(item);
+    }
+    public void RemoveItem(int element_id)
+    {
+        _ = _items.Remove(element_id, out var old);
+        old.RemoveFromHierarchy();
+    }
+    public void UpdateIcon(int element_id, Texture2D icon)
+    {
+        var existing_item = _items[element_id];
+        existing_item.style.backgroundImage = icon;
     }
 }

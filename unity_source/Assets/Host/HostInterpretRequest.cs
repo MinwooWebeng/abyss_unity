@@ -12,9 +12,18 @@ namespace Host
         private GlobalDependency.RendererBase _renderer_base;
         private GlobalDependency.UIBase _ui_base;
         private GlobalDependency.InteractionBase _interaction_base;
+        private readonly StaticResourceLoader _static_resource_loader = new();
+        public void HostInterpretRequestDispose()
+        {
+            RenderingActionQueue.Clear();
+            _renderer_base = null;
+            _ui_base = null;
+            _interaction_base = null;
+            _static_resource_loader.Dispose();
+        }
         public void InjectExecutorTarg(
-            GlobalDependency.RendererBase renderer_base, 
-            GlobalDependency.UIBase ui_base, 
+            GlobalDependency.RendererBase renderer_base,
+            GlobalDependency.UIBase ui_base,
             GlobalDependency.InteractionBase interaction_base)
         {
             _renderer_base = renderer_base;
@@ -40,10 +49,16 @@ namespace Host
                 );
             };
             _ui_base.OnConsoleCommand = (arg) => Tx.ConsoleInput(0, arg);
-        }
+            _ui_base.LocalItemSection.OnCloseCallback = (uuid) =>
+                Tx.UnshareContent(ByteString.CopyFrom(uuid.ToByteArray()));
 
-        //initialization data
-        private string _local_hash;
+            _static_resource_loader.SynchronizedActionEnqueueCallback =
+                RenderingActionQueue.Enqueue;
+        }
+        public void HostInterpretRequestStart()
+        {
+            _static_resource_loader.Start();
+        }
 
         private void InterpretRequest(RenderAction render_action)
         {
@@ -61,7 +76,7 @@ namespace Host
             case RenderAction.InnerOneofCase.ItemSetIcon: RenderingActionQueue.Enqueue(ItemSetIcon(render_action.ItemSetIcon)); return;
             case RenderAction.InnerOneofCase.ItemSetActive: RenderingActionQueue.Enqueue(ItemSetActive(render_action.ItemSetActive)); return;
             case RenderAction.InnerOneofCase.ItemAlert: RenderingActionQueue.Enqueue(ItemAlert(render_action.ItemAlert)); return;
-            case RenderAction.InnerOneofCase.OpenStaticResource: RenderingActionQueue.Enqueue(OpenStaticResource(render_action.OpenStaticResource)); return;
+            case RenderAction.InnerOneofCase.OpenStaticResource: OpenStaticResource(render_action.OpenStaticResource); return;
             case RenderAction.InnerOneofCase.CloseResource: RenderingActionQueue.Enqueue(CloseResource(render_action.CloseResource)); return;
             case RenderAction.InnerOneofCase.CreateCompositeResource: RenderingActionQueue.Enqueue(CreateCompositeResource(render_action.CreateCompositeResource)); return;
             case RenderAction.InnerOneofCase.MemberInfo: RenderingActionQueue.Enqueue(MemberInfo(render_action.MemberInfo)); return;
@@ -116,17 +131,44 @@ namespace Host
         };
         private Action CreateItem(RenderAction.Types.CreateItem args) => () =>
         {
-            if (args.SharerHash == GlobalDependency.UserInfo.LocalHash) { }
-            //TODO _ui_base.LocalItemSection.CreateItem(this, args.ElementId, new(args.Uuid.ToByteArray()));
-            else
-                _ui_base.MemberItemSection.CreateItem(args.SharerHash, args.ElementId);
+            //if (args.SharerHash == GlobalDependency.UserInfo.LocalHash) { }
+            ////TODO _ui_base.LocalItemSection.CreateItem(this, args.ElementId, new(args.Uuid.ToByteArray()));
+            //else
+            //    _ui_base.MemberItemSection.CreateItem(args.SharerHash, args.ElementId);
         };
         private Action DeleteItem(RenderAction.Types.DeleteItem args) => () => { };
         private Action ItemSetTitle(RenderAction.Types.ItemSetTitle args) => () => { };
-        private Action ItemSetIcon(RenderAction.Types.ItemSetIcon args) => () => { };
+        private Action ItemSetIcon(RenderAction.Types.ItemSetIcon args)
+        {
+            if (args.ElementId == 0)
+            {
+                //world environment
+                if (!_static_resource_loader.TryGetValue(args.MediaId, out var icon_resource))
+                    throw new InvalidOperationException("resource not found");
+
+                return icon_resource switch
+                {
+                    Image image => () => _ui_base.SetWorldIcon(image.Texture),
+                    _ => () => { }
+                };
+            }
+
+            return () => { };
+        }
         private Action ItemSetActive(RenderAction.Types.ItemSetActive args) => () => { };
         private Action ItemAlert(RenderAction.Types.ItemAlert args) => () => { };
-        private Action OpenStaticResource(RenderAction.Types.OpenStaticResource args) => () => { };
+        private void OpenStaticResource(RenderAction.Types.OpenStaticResource args)
+        {
+            StaticResource resource = args.Mime switch
+            {
+                MIME.ImageJpeg or MIME.ImagePng => new Image(args.FileName),
+                _ => throw new NotImplementedException("not implemented MIMEType"),
+            };
+            if (!_static_resource_loader.TryAdd(args.ResourceId, resource))
+            {
+                throw new InvalidOperationException("duplicate resource");
+            }
+        }
         private Action CloseResource(RenderAction.Types.CloseResource args) => () => { };
         private Action CreateCompositeResource(RenderAction.Types.CreateCompositeResource args) => () => { };
         private Action MemberInfo(RenderAction.Types.MemberInfo args) => () => { };

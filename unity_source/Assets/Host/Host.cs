@@ -36,6 +36,7 @@ namespace Host
         {
             _rx_thread.Start();
             _rx_stderr_thread.Start();
+            HostInterpretRequestStart();
         }
 
         private void RxLoop()
@@ -83,6 +84,8 @@ namespace Host
             _rx_thread.Join();
             _rx_stderr_thread.Join();
             _engine_com.Dispose();
+
+            HostInterpretRequestDispose();
         }
     }
 }

@@ -82,19 +82,6 @@ namespace Host
             case RenderAction.InnerOneofCase.MemberInfo: RenderingActionQueue.Enqueue(MemberInfo(render_action.MemberInfo)); return;
             case RenderAction.InnerOneofCase.MemberSetProfile: RenderingActionQueue.Enqueue(MemberSetProfile(render_action.MemberSetProfile)); return;
             case RenderAction.InnerOneofCase.MemberLeave: RenderingActionQueue.Enqueue(MemberLeave(render_action.MemberLeave)); return;
-            case RenderAction.InnerOneofCase.CreateImage: RenderingActionQueue.Enqueue(CreateImage(render_action.CreateImage)); return;
-            case RenderAction.InnerOneofCase.DeleteImage: RenderingActionQueue.Enqueue(DeleteImage(render_action.DeleteImage)); return;
-            case RenderAction.InnerOneofCase.CreateMaterialV: RenderingActionQueue.Enqueue(CreateMaterialV(render_action.CreateMaterialV)); return;
-            case RenderAction.InnerOneofCase.CreateMaterialF: RenderingActionQueue.Enqueue(CreateMaterialF(render_action.CreateMaterialF)); return;
-            case RenderAction.InnerOneofCase.MaterialSetParamV: RenderingActionQueue.Enqueue(MaterialSetParamV(render_action.MaterialSetParamV)); return;
-            case RenderAction.InnerOneofCase.MaterialSetParamC: RenderingActionQueue.Enqueue(MaterialSetParamC(render_action.MaterialSetParamC)); return;
-            case RenderAction.InnerOneofCase.DeleteMaterial: RenderingActionQueue.Enqueue(DeleteMaterial(render_action.DeleteMaterial)); return;
-            case RenderAction.InnerOneofCase.CreateStaticMesh: RenderingActionQueue.Enqueue(CreateStaticMesh(render_action.CreateStaticMesh)); return;
-            case RenderAction.InnerOneofCase.StaticMeshSetMaterial: RenderingActionQueue.Enqueue(StaticMeshSetMaterial(render_action.StaticMeshSetMaterial)); return;
-            case RenderAction.InnerOneofCase.ElemAttachStaticMesh: RenderingActionQueue.Enqueue(ElemAttachStaticMesh(render_action.ElemAttachStaticMesh)); return;
-            case RenderAction.InnerOneofCase.DeleteStaticMesh: RenderingActionQueue.Enqueue(DeleteStaticMesh(render_action.DeleteStaticMesh)); return;
-            case RenderAction.InnerOneofCase.CreateAnimation: RenderingActionQueue.Enqueue(CreateAnimation(render_action.CreateAnimation)); return;
-            case RenderAction.InnerOneofCase.DeleteAnimation: RenderingActionQueue.Enqueue(DeleteAnimation(render_action.DeleteAnimation)); return;
             case RenderAction.InnerOneofCase.LocalInfo: RenderingActionQueue.Enqueue(LocalInfo(render_action.LocalInfo)); return;
             case RenderAction.InnerOneofCase.InfoContentShared: RenderingActionQueue.Enqueue(InfoContentShared(render_action.InfoContentShared)); return;
             case RenderAction.InnerOneofCase.InfoContentDeleted: RenderingActionQueue.Enqueue(InfoContentDeleted(render_action.InfoContentDeleted)); return;
@@ -143,7 +130,7 @@ namespace Host
             if (args.ElementId == 0)
             {
                 //world environment
-                if (!_static_resource_loader.TryGetValue(args.MediaId, out var icon_resource))
+                if (!_static_resource_loader.TryGetValue(args.ResourceId, out var icon_resource))
                     throw new InvalidOperationException("resource not found");
 
                 return icon_resource switch
@@ -174,19 +161,6 @@ namespace Host
         private Action MemberInfo(RenderAction.Types.MemberInfo args) => () => { };
         private Action MemberSetProfile(RenderAction.Types.MemberSetProfile args) => () => { };
         private Action MemberLeave(RenderAction.Types.MemberLeave args) => () => { };
-        private Action CreateImage(RenderAction.Types.CreateImage args) => () => { };
-        private Action DeleteImage(RenderAction.Types.DeleteImage args) => () => { };
-        private Action CreateMaterialV(RenderAction.Types.CreateMaterialV args) => () => { };
-        private Action CreateMaterialF(RenderAction.Types.CreateMaterialF args) => () => { };
-        private Action MaterialSetParamV(RenderAction.Types.MaterialSetParamV args) => () => { };
-        private Action MaterialSetParamC(RenderAction.Types.MaterialSetParamC args) => () => { };
-        private Action DeleteMaterial(RenderAction.Types.DeleteMaterial args) => () => { };
-        private Action CreateStaticMesh(RenderAction.Types.CreateStaticMesh args) => () => { };
-        private Action StaticMeshSetMaterial(RenderAction.Types.StaticMeshSetMaterial args) => () => { };
-        private Action ElemAttachStaticMesh(RenderAction.Types.ElemAttachStaticMesh args) => () => { };
-        private Action DeleteStaticMesh(RenderAction.Types.DeleteStaticMesh args) => () => { };
-        private Action CreateAnimation(RenderAction.Types.CreateAnimation args) => () => { };
-        private Action DeleteAnimation(RenderAction.Types.DeleteAnimation args) => () => { };
         private Action LocalInfo(RenderAction.Types.LocalInfo args) => () =>
         {
             GlobalDependency.UserInfo.LocalHash = args.LocalHash;

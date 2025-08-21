@@ -33,7 +33,6 @@ namespace Host
             {
                 //completed.
                 _bytes = null;
-                
             }
         }
         public override void Dispose()

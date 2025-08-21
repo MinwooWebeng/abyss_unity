@@ -111,7 +111,7 @@ namespace Host
         private Action MoveElement(RenderAction.Types.MoveElement args) => () =>
         {
             _renderer_base._elements[args.ElementId].transform.SetParent(
-                _renderer_base.GetElement(args.NewParentId).transform, true);
+                _renderer_base.GetElement(args.NewParentId).transform, false);
         };
         private Action DeleteElement(RenderAction.Types.DeleteElement args) => () =>
         {

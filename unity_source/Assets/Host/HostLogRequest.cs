@@ -17,6 +17,8 @@ namespace Host
             case RenderAction.InnerOneofCase.DeleteElement: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.DeleteElement)); return;
             case RenderAction.InnerOneofCase.ElemSetActive: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.ElemSetActive)); return;
             case RenderAction.InnerOneofCase.ElemSetTransform: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.ElemSetTransform)); return;
+            case RenderAction.InnerOneofCase.ElemAttachResource: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.ElemAttachResource)); return;
+            case RenderAction.InnerOneofCase.ElemDetachResource: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.ElemDetachResource)); return;
             case RenderAction.InnerOneofCase.CreateItem: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.CreateItem)); return;
             case RenderAction.InnerOneofCase.DeleteItem: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.DeleteItem)); return;
             case RenderAction.InnerOneofCase.ItemSetTitle: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.ItemSetTitle)); return;

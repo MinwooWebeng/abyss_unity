@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../../AmlDepr"
+		},
+		{
+			"path": "../../../../unity/AbyssUI"
 		}
 	],
 	"settings": {}

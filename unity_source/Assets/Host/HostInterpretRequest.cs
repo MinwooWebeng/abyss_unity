@@ -2,6 +2,7 @@ using AbyssCLI.ABI;
 using Google.Protobuf;
 using System;
 using System.Collections.Concurrent;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Host
@@ -65,11 +66,13 @@ namespace Host
             switch (render_action.InnerCase)
             {
             case RenderAction.InnerOneofCase.ConsolePrint: RenderingActionQueue.Enqueue(ConsolePrint(render_action.ConsolePrint)); return;
-            case RenderAction.InnerOneofCase.CreateElement: RenderingActionQueue.Enqueue(CreateElement(render_action.CreateElement)); return;
-            case RenderAction.InnerOneofCase.MoveElement: RenderingActionQueue.Enqueue(MoveElement(render_action.MoveElement)); return;
-            case RenderAction.InnerOneofCase.DeleteElement: RenderingActionQueue.Enqueue(DeleteElement(render_action.DeleteElement)); return;
-            case RenderAction.InnerOneofCase.ElemSetActive: RenderingActionQueue.Enqueue(ElemSetActive(render_action.ElemSetActive)); return;
-            case RenderAction.InnerOneofCase.ElemSetTransform: RenderingActionQueue.Enqueue(ElemSetTransform(render_action.ElemSetTransform)); return;
+            case RenderAction.InnerOneofCase.CreateElement: RenderingActionQueue.Enqueue(() => _renderer_base.CreateElement(render_action.CreateElement)); return;
+            case RenderAction.InnerOneofCase.MoveElement: RenderingActionQueue.Enqueue(() => _renderer_base.MoveElement(render_action.MoveElement)); return;
+            case RenderAction.InnerOneofCase.DeleteElement: RenderingActionQueue.Enqueue(() => _renderer_base.DeleteElement(render_action.DeleteElement)); return;
+            case RenderAction.InnerOneofCase.ElemSetActive: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetActive(render_action.ElemSetActive)); return;
+            case RenderAction.InnerOneofCase.ElemSetTransform: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetTransform(render_action.ElemSetTransform)); return;
+            case RenderAction.InnerOneofCase.ElemAttachResource: RenderingActionQueue.Enqueue(ElemAttachResource(render_action.ElemAttachResource)); return;
+            case RenderAction.InnerOneofCase.ElemDetachResource: RenderingActionQueue.Enqueue(ElemDetachResource(render_action.ElemDetachResource)); return;
             case RenderAction.InnerOneofCase.CreateItem: RenderingActionQueue.Enqueue(CreateItem(render_action.CreateItem)); return;
             case RenderAction.InnerOneofCase.DeleteItem: RenderingActionQueue.Enqueue(DeleteItem(render_action.DeleteItem)); return;
             case RenderAction.InnerOneofCase.ItemSetTitle: RenderingActionQueue.Enqueue(ItemSetTitle(render_action.ItemSetTitle)); return;
@@ -77,11 +80,11 @@ namespace Host
             case RenderAction.InnerOneofCase.ItemSetActive: RenderingActionQueue.Enqueue(ItemSetActive(render_action.ItemSetActive)); return;
             case RenderAction.InnerOneofCase.ItemAlert: RenderingActionQueue.Enqueue(ItemAlert(render_action.ItemAlert)); return;
             case RenderAction.InnerOneofCase.OpenStaticResource: OpenStaticResource(render_action.OpenStaticResource); return;
-            case RenderAction.InnerOneofCase.CloseResource: RenderingActionQueue.Enqueue(CloseResource(render_action.CloseResource)); return;
             case RenderAction.InnerOneofCase.CreateCompositeResource: RenderingActionQueue.Enqueue(CreateCompositeResource(render_action.CreateCompositeResource)); return;
+            case RenderAction.InnerOneofCase.CloseResource: RenderingActionQueue.Enqueue(CloseResource(render_action.CloseResource)); return;
             case RenderAction.InnerOneofCase.MemberInfo: RenderingActionQueue.Enqueue(MemberInfo(render_action.MemberInfo)); return;
-            case RenderAction.InnerOneofCase.MemberSetProfile: RenderingActionQueue.Enqueue(MemberSetProfile(render_action.MemberSetProfile)); return;
             case RenderAction.InnerOneofCase.MemberLeave: RenderingActionQueue.Enqueue(MemberLeave(render_action.MemberLeave)); return;
+            case RenderAction.InnerOneofCase.MemberSetProfile: RenderingActionQueue.Enqueue(MemberSetProfile(render_action.MemberSetProfile)); return;
             case RenderAction.InnerOneofCase.LocalInfo: RenderingActionQueue.Enqueue(LocalInfo(render_action.LocalInfo)); return;
             case RenderAction.InnerOneofCase.InfoContentShared: RenderingActionQueue.Enqueue(InfoContentShared(render_action.InfoContentShared)); return;
             case RenderAction.InnerOneofCase.InfoContentDeleted: RenderingActionQueue.Enqueue(InfoContentDeleted(render_action.InfoContentDeleted)); return;
@@ -89,33 +92,30 @@ namespace Host
             }
         }
         private Action ConsolePrint(RenderAction.Types.ConsolePrint args) => () => _ui_base.AppendConsole(args.Text);
-        private Action CreateElement(RenderAction.Types.CreateElement args) => () =>
+        private Action ElemAttachResource(RenderAction.Types.ElemAttachResource args)
         {
-            GameObject newGO = new(args.ElementId.ToString());
-            newGO.transform.SetParent(_renderer_base.GetElement(args.ParentId).transform, false);
-            _renderer_base._elements[args.ElementId] = newGO;
-        };
-        private Action MoveElement(RenderAction.Types.MoveElement args) => () =>
-        {
-            _renderer_base._elements[args.ElementId].transform.SetParent(
-                _renderer_base.GetElement(args.NewParentId).transform, false);
-        };
-        private Action DeleteElement(RenderAction.Types.DeleteElement args) => () =>
-        {
-            GameObject.Destroy(_renderer_base.GetElement(args.ElementId));
-            _ = _renderer_base._elements.Remove(args.ElementId);
-        };
-        private Action ElemSetActive(RenderAction.Types.ElemSetActive args) => () =>
-        {
-            _renderer_base.GetElement(args.ElementId).SetActive(args.Active);
-        };
-        private Action ElemSetTransform(RenderAction.Types.ElemSetTransform args) => () =>
-        {
-            _renderer_base.GetElement(args.ElementId).transform.SetLocalPositionAndRotation(
-                new Vector3(args.Pos.X, args.Pos.Y, args.Pos.Z),
-                new Quaternion(args.Rot.X, args.Rot.Y, args.Rot.Z, args.Rot.W)
-            );
-        };
+            if (!_static_resource_loader.TryGetValue(args.ResourceId, out var resource))
+                throw new Exception("resource not found");
+
+            switch (resource)
+            {
+            case Mesh mesh:
+            {
+                if (!_renderer_base._elements.TryGetValue(args.ElementId, out var element))
+                    throw new Exception("failed to find element to attach resource");
+
+                return () =>
+                {
+                    UnityEngine.MeshFilter meshFilter = element.UnityGameObject.AddComponent<MeshFilter>();
+                    UnityEngine.MeshRenderer meshRenderer = element.UnityGameObject.AddComponent<MeshRenderer>();
+
+                    meshFilter.mesh = mesh.UnityMesh;
+                };
+            }
+            default: throw new Exception("unknown or non-attachable resource");
+            }
+        }
+        private Action ElemDetachResource(RenderAction.Types.ElemDetachResource args) => () => { };
         private Action CreateItem(RenderAction.Types.CreateItem args) => () =>
         {
             //if (args.SharerHash == GlobalDependency.UserInfo.LocalHash) { }
@@ -148,8 +148,9 @@ namespace Host
         {
             StaticResource resource = args.Mime switch
             {
+                MIME.ModelObj => new Mesh(args.FileName),
                 MIME.ImageJpeg or MIME.ImagePng => new Image(args.FileName),
-                _ => throw new NotImplementedException("not implemented MIMEType"),
+                MIME any => throw new NotImplementedException("not implemented MIMEType: " + any.ToString()),
             };
             if (!_static_resource_loader.TryAdd(args.ResourceId, resource))
             {

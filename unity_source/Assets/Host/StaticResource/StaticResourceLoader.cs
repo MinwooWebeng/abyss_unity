@@ -17,7 +17,8 @@ namespace Host
         public Action<Action> SynchronizedActionEnqueueCallback;
         public Action<StaticResource> OnResourceFinialize;
         private bool _started = false;
-        public void Start() => _main_loop = Task.Run(async () =>
+        public void Start() { _main_loop = Task.Run(MainLoop); }
+        private async Task MainLoop()
         {
             if (_started) throw new InvalidOperationException("Start() called multiple times");
             _started = true;
@@ -25,11 +26,11 @@ namespace Host
             var token = _cts.Token;
             while (!token.IsCancellationRequested)
             {
-                foreach(var entry in _resources)
+                foreach (var entry in _resources)
                 {
-                    if(entry.Value.IsMarkedDispose)
+                    if (entry.Value.IsMarkedDispose)
                     {
-                        if(entry.Value.IsCheckedOut)
+                        if (entry.Value.IsCheckedOut)
                             continue;
 
                         SynchronizedActionEnqueueCallback(() =>
@@ -48,17 +49,16 @@ namespace Host
                         entry.Value.PrevSize = current_size;
                     }
                 }
-
                 await Task.Delay(50, token); //TODO: adaptive
             }
-        });
+        }
 
         public bool TryAdd(int resource_id, StaticResource resource)
         {
-            if(!_resources.TryAdd(resource_id, resource))
+            SynchronizedActionEnqueueCallback(resource.Init);
+            if (!_resources.TryAdd(resource_id, resource))
                 return false;
 
-            SynchronizedActionEnqueueCallback(resource.Init);
             return true;
         }
         public bool TryGetValue(int resource_id, out StaticResource resource) =>
@@ -84,12 +84,14 @@ namespace Host
             {
                 try
                 {
+                    Logger.Writer.WriteLine("waiting for main loop...");
                     _main_loop.Wait();
+                    Logger.Writer.WriteLine("main loop terminated");
                 }
-                catch(TaskCanceledException) { }
-                catch(Exception ex)
+                catch (TaskCanceledException) { }
+                catch (Exception ex)
                 {
-                    Logger.Writer.WriteLine("fatal(StaticResourceLoader.cs:Dispose():92)", ex);
+                    Logger.Writer.WriteLine("fatal(StaticResourceLoader.cs:Dispose():92)" + ex.ToString());
                 }
             }
 
@@ -111,7 +113,7 @@ namespace Host
     /// </summary>
     public abstract class StaticResource : IDisposable
     {
-        private readonly MemoryMappedFile _mmf;
+        protected readonly MemoryMappedFile _mmf;
         protected readonly MemoryMappedViewAccessor _accessor;
         public readonly int Size;
         public StaticResource(string file_name)

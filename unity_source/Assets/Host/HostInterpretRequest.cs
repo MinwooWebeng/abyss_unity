@@ -2,7 +2,7 @@ using AbyssCLI.ABI;
 using Google.Protobuf;
 using System;
 using System.Collections.Concurrent;
-using Unity.VisualScripting;
+using System.Xml.Linq;
 using UnityEngine;
 
 namespace Host
@@ -71,7 +71,7 @@ namespace Host
             case RenderAction.InnerOneofCase.DeleteElement: RenderingActionQueue.Enqueue(() => _renderer_base.DeleteElement(render_action.DeleteElement)); return;
             case RenderAction.InnerOneofCase.ElemSetActive: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetActive(render_action.ElemSetActive)); return;
             case RenderAction.InnerOneofCase.ElemSetTransform: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetTransform(render_action.ElemSetTransform)); return;
-            case RenderAction.InnerOneofCase.ElemAttachResource: RenderingActionQueue.Enqueue(ElemAttachResource(render_action.ElemAttachResource)); return;
+            case RenderAction.InnerOneofCase.ElemAttachResource: RenderingActionQueue.Enqueue(() => ElemAttachResource(render_action.ElemAttachResource)); return;
             case RenderAction.InnerOneofCase.ElemDetachResource: RenderingActionQueue.Enqueue(ElemDetachResource(render_action.ElemDetachResource)); return;
             case RenderAction.InnerOneofCase.CreateItem: RenderingActionQueue.Enqueue(CreateItem(render_action.CreateItem)); return;
             case RenderAction.InnerOneofCase.DeleteItem: RenderingActionQueue.Enqueue(DeleteItem(render_action.DeleteItem)); return;
@@ -112,8 +112,32 @@ namespace Host
                     meshFilter.mesh = mesh.UnityMesh;
                 };
             }
+            case Image image:
+            {
+                switch (args.Role)
+                {
+                case ResourceRole.Albedo:
+                    break;
+                case ResourceRole.Normal:
+                    break;
+                case ResourceRole.Roughness:
+                    break;
+                case ResourceRole.Metalic:
+                    break;
+                case ResourceRole.Specular:
+                    break;
+                case ResourceRole.Opacity:
+                    break;
+                case ResourceRole.Emission:
+                    break;
+                default:
+                    throw new InvalidOperationException("image with invalid role");
+                }
+                break;
+            }
             default: throw new Exception("unknown or non-attachable resource");
             }
+            return () => { };
         }
         private Action ElemDetachResource(RenderAction.Types.ElemDetachResource args) => () => { };
         private Action CreateItem(RenderAction.Types.CreateItem args) => () =>

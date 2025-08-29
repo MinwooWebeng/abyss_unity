@@ -1,0 +1,29 @@
+<!DOCTYPE aml>
+<aml>
+<head>
+    <script>
+
+console.log("hello world - " + version);
+
+    </script>
+    <link rel="icon" href="https://otlibrary.com/wp-content/gallery/wallpapers/1470222.jpg"/>
+</head>
+<body>
+    <o pos="1,1,1">
+        <o id="br1" pos="2,2,2">
+            <o pos="3,3,3">
+                <o id="br2" pos="3.1,3.1,3.1">
+                </o>
+                <o pos="3.2,3.2,3.2">
+                </o>
+            </o>
+            <o pos="4,4,4">
+                <o id="br3" pos="4.1,4.1,4.1">
+                </o>
+                <o pos="4.2,4.2,4.2">
+                </o>
+            </o>
+        </o>
+    </o>
+</body>
+</aml>

@@ -151,9 +151,11 @@ namespace Host
         private Action ItemSetTitle(RenderAction.Types.ItemSetTitle args) => () => { };
         private Action ItemSetIcon(RenderAction.Types.ItemSetIcon args)
         {
-            if (args.ElementId == 0)
+            if (args.ElementId == 0) //world environment
             {
-                //world environment
+                if (args.ResourceId == 0) //default icon
+                    return _ui_base.ClearWorldIcon;
+
                 if (!_static_resource_loader.TryGetValue(args.ResourceId, out var icon_resource))
                     throw new InvalidOperationException("resource not found");
 

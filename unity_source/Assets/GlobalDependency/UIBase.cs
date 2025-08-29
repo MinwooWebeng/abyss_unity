@@ -160,5 +160,9 @@ namespace GlobalDependency
         {
             root.style.backgroundImage = texture;
         }
+        public void ClearWorldIcon()
+        {
+            root.style.backgroundImage = null;
+        }
     }
 }

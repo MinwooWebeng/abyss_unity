@@ -1,4 +1,5 @@
 
+#region Designer generated code
 using Google.Protobuf;
 using System;
 using System.CodeDom.Compiler;
@@ -48,7 +49,8 @@ namespace AbyssCLI.ABI
 		public void CreateElement
 		(
 			int parent_id,
-			int element_id
+			int element_id,
+			ElementTag tag
 		)
 		{
 			var action = new RenderAction
@@ -56,7 +58,8 @@ namespace AbyssCLI.ABI
 				CreateElement = new()
 				{
 					ParentId = parent_id,
-                    ElementId = element_id
+                    ElementId = element_id,
+                    Tag = tag
 				}
 			};
 			
@@ -424,3 +427,4 @@ namespace AbyssCLI.ABI
 		}
 	}
 }
+#endregion Designer generated code

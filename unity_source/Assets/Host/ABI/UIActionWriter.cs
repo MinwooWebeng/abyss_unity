@@ -1,4 +1,5 @@
 
+#region Designer generated code
 using Google.Protobuf;
 using System;
 using System.CodeDom.Compiler;
@@ -147,3 +148,4 @@ namespace AbyssCLI.ABI
 		}
 	}
 }
+#endregion Designer generated code

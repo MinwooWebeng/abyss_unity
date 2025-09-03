@@ -2,9 +2,8 @@ using AbyssCLI.ABI;
 using Google.Protobuf;
 using System;
 using System.Collections.Concurrent;
-using System.Xml.Linq;
-using UnityEngine;
 
+#nullable enable
 namespace Host
 {
     partial class Host
@@ -17,9 +16,6 @@ namespace Host
         public void HostInterpretRequestDispose()
         {
             RenderingActionQueue.Clear();
-            _renderer_base = null;
-            _ui_base = null;
-            _interaction_base = null;
             _static_resource_loader.Dispose();
         }
         public void InjectExecutorTarg(
@@ -71,7 +67,7 @@ namespace Host
             case RenderAction.InnerOneofCase.DeleteElement: RenderingActionQueue.Enqueue(() => _renderer_base.DeleteElement(render_action.DeleteElement)); return;
             case RenderAction.InnerOneofCase.ElemSetActive: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetActive(render_action.ElemSetActive)); return;
             case RenderAction.InnerOneofCase.ElemSetTransform: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetTransform(render_action.ElemSetTransform)); return;
-            case RenderAction.InnerOneofCase.ElemAttachResource: RenderingActionQueue.Enqueue(() => ElemAttachResource(render_action.ElemAttachResource)); return;
+            case RenderAction.InnerOneofCase.ElemAttachResource: RenderingActionQueue.Enqueue(ElemAttachResource(render_action.ElemAttachResource)); return;
             case RenderAction.InnerOneofCase.ElemDetachResource: RenderingActionQueue.Enqueue(ElemDetachResource(render_action.ElemDetachResource)); return;
             case RenderAction.InnerOneofCase.CreateItem: RenderingActionQueue.Enqueue(CreateItem(render_action.CreateItem)); return;
             case RenderAction.InnerOneofCase.DeleteItem: RenderingActionQueue.Enqueue(DeleteItem(render_action.DeleteItem)); return;
@@ -95,49 +91,15 @@ namespace Host
         private Action ElemAttachResource(RenderAction.Types.ElemAttachResource args)
         {
             if (!_static_resource_loader.TryGetValue(args.ResourceId, out var resource))
-                throw new Exception("resource not found");
+                throw new Exception("ElemAttachResource: resource not found");
 
-            switch (resource)
-            {
-            case Mesh mesh:
+            return () =>
             {
                 if (!_renderer_base._elements.TryGetValue(args.ElementId, out var element))
-                    throw new Exception("failed to find element to attach resource");
+                    throw new Exception("ElemAttachResource: element not found");
 
-                return () =>
-                {
-                    UnityEngine.MeshFilter meshFilter = element.UnityGameObject.AddComponent<MeshFilter>();
-                    UnityEngine.MeshRenderer meshRenderer = element.UnityGameObject.AddComponent<MeshRenderer>();
-
-                    meshFilter.mesh = mesh.UnityMesh;
-                };
-            }
-            case Image image:
-            {
-                switch (args.Role)
-                {
-                case ResourceRole.Albedo:
-                    break;
-                case ResourceRole.Normal:
-                    break;
-                case ResourceRole.Roughness:
-                    break;
-                case ResourceRole.Metalic:
-                    break;
-                case ResourceRole.Specular:
-                    break;
-                case ResourceRole.Opacity:
-                    break;
-                case ResourceRole.Emission:
-                    break;
-                default:
-                    throw new InvalidOperationException("image with invalid role");
-                }
-                break;
-            }
-            default: throw new Exception("unknown or non-attachable resource");
-            }
-            return () => { };
+                element.AttachResource(args.ResourceId, resource, args.Role);
+            };
         }
         private Action ElemDetachResource(RenderAction.Types.ElemDetachResource args) => () => { };
         private Action CreateItem(RenderAction.Types.CreateItem args) => () =>
@@ -165,7 +127,6 @@ namespace Host
                     _ => () => { }
                 };
             }
-
             return () => { };
         }
         private Action ItemSetActive(RenderAction.Types.ItemSetActive args) => () => { };

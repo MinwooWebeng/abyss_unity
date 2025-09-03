@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
@@ -111,7 +112,10 @@ namespace GlobalDependency
         {
             if (_is_active && _is_console_updated)
             {
-                extraLabel.text = string.Join("\n", _console_lines);
+                lock (_console_lines)
+                {
+                    extraLabel.text = string.Join("\n", _console_lines);
+                }
                 _is_console_updated = false;
             }
         }
@@ -149,12 +153,15 @@ namespace GlobalDependency
         }
         public void AppendConsole(string line)
         {
-            _ = _console_lines.AddLast(line);
-            if (_console_lines.Count == 100)
+            lock (_console_lines)
             {
-                _console_lines.RemoveFirst();
+                _ = _console_lines.AddLast(line);
+                if (_console_lines.Count == 100)
+                {
+                    _console_lines.RemoveFirst();
+                }
+                _is_console_updated = true;
             }
-            _is_console_updated = true;
         }
         public void SetWorldIcon(Texture2D texture)
         {

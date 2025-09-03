@@ -24,6 +24,9 @@ console.log("hello world - " + version);
                 </o>
             </o>
         </o>
+        <obj id="cat" src="http://127.0.0.1:8899/lowpolycat/cat.obj">
+            <pbrm id="cat_mat" albedo="https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjEwNzQtMDA4LWt2a2QwaXh0LmpwZw.jpg"/>
+        </obj>
     </o>
 </body>
 </aml>

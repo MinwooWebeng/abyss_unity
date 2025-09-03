@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using static Google.Protobuf.Compiler.CodeGeneratorResponse.Types;
 
 namespace GlobalDependency
 {
@@ -8,11 +9,9 @@ namespace GlobalDependency
     {
         public UnityEngine.Material none;
         public UnityEngine.Material color;
-        public string[] color_param;
-
         public UnityEngine.Material diffuse;
-        public string[] diffuse_param;
-        //TODO
+
+        //public UnityEngine.Material pbr;
         //public Shader specular;
         //public Shader bsdf;
         //public Shader transparent;
@@ -31,27 +30,20 @@ namespace GlobalDependency
             {
                 if (field.FieldType == typeof(UnityEngine.Material))
                 {
+                    //add material to _runtime_map, indexed by the variable name
                     var mat = field.GetValue(this) as UnityEngine.Material;
                     _rumtime_map[field.Name] = mat;
-                }
-                else if (field.FieldType == typeof(string[]))
-                {
-                    var shader_name = field.Name[..^6];
-                    var mat = _rumtime_map[shader_name];
-                    var param_names = field.GetValue(this) as string[];
 
                     var id_map = new Dictionary<string, int>();
-                    var propertyCount = mat.shader.GetPropertyCount();
-                    for (int i = 0; i < propertyCount && i < param_names.Length; i++)
+                    for (int i = 0; i < mat.shader.GetPropertyCount(); i++)
                     {
+                        //iterate parameters, get property name id, add to id_map if the name matches.
                         string propertyName = mat.shader.GetPropertyName(i);
                         int propertyID = mat.shader.GetPropertyNameId(i);
-                        //Debug.Log($"Shader: {shader_name}({propertyCount}) - Property ID: {propertyID} - Name: {propertyName}");
-
-                        id_map[param_names[i]] = propertyID;
+                        Debug.Log($"ShaderLoader: {field.Name} ({i}) - Name: {propertyName} - Property ID: {propertyID}");
+                        id_map[propertyName] = propertyID;
                     }
-
-                    _parameter_id_maps[shader_name] = id_map;
+                    _parameter_id_maps[field.Name] = id_map;
                 }
             }
         }
@@ -60,19 +52,22 @@ namespace GlobalDependency
             _parameter_id_maps = null;
             _rumtime_map = null;
         }
-
         public UnityEngine.Material Get(string name)
         {
             if (_rumtime_map.TryGetValue(name, out Material mat))
-            {
                 return mat;
-            }
+
             return none;
         }
-        public Dictionary<string, int> GetParameterIDMap(string name)
+        public void SetMaterialTexture(Material target, string mat_name, string param_name, Texture2D texture)
         {
-            return _parameter_id_maps[name];
+            var id = _parameter_id_maps[mat_name][param_name];
+            target.SetTexture(id, texture);
+        }
+        public void ClearMaterialTexture(Material target, string mat_name, string param_name)
+        {
+            var id = _parameter_id_maps[mat_name][param_name];
+            target.SetTexture(_parameter_id_maps[mat_name][param_name], new Texture2D(2, 2));
         }
     }
-
 }

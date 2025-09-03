@@ -7,17 +7,18 @@ namespace GlobalDependency
 {
     public class RendererBase : MonoBehaviour
     {
+        public CommonShaderLoader ShaderLoader;
         // in current implementation, element is GameObject
-        [HideInInspector] public Dictionary<int, DomElement> _elements;
-        [HideInInspector] public DomElement _nil_root;
-        [HideInInspector] public DomElement _root;
+        [HideInInspector] public Dictionary<int, DOM.DomElement> _elements;
+        [HideInInspector] public DOM.DomElement _nil_root;
+        [HideInInspector] public DOM.DomElement _root;
         // I have no idea what type can resources inherit in common.
         [HideInInspector] public Dictionary<int, object> _resources;
         void OnEnable()
         {
-            _nil_root = new DomElement("hidden");
-            _nil_root.UnityGameObject.SetActive(false);
-            _root = new DomElement("root");
+            _nil_root = new DOM.Hidden(this, -1);
+            _nil_root.GetThing<GameObject>().SetActive(false);
+            _root = new DOM.O(this, 0);
             _elements = new()
             {
                 [-1] = _nil_root,
@@ -32,7 +33,7 @@ namespace GlobalDependency
             _root.Dispose();
             _resources = null;
         }
-        public DomElement GetElement(int index) => index switch
+        public DOM.DomElement GetElement(int index) => index switch
         {
             -1 => _nil_root,
             0 => _root,
@@ -42,7 +43,13 @@ namespace GlobalDependency
         //rendering action handler
         public void CreateElement(RenderAction.Types.CreateElement args)
         {
-            DomElement element = new(args.ElementId.ToString());
+            DOM.DomElement element = args.Tag switch
+            {
+                ElementTag.O => new DOM.O(this, args.ElementId),
+                ElementTag.Obj => new DOM.Obj(this, args.ElementId),
+                ElementTag.Pbrm => new DOM.Pbrm(this, args.ElementId),
+                _ => throw new NotImplementedException("ElementTag not implemented")
+            };
             element.SetParent(GetElement(args.ParentId));
             _elements[args.ElementId] = element;
         }
@@ -57,11 +64,11 @@ namespace GlobalDependency
         }
         public void ElemSetActive(RenderAction.Types.ElemSetActive args)
         {
-            GetElement(args.ElementId).UnityGameObject.SetActive(args.Active);
+            GetElement(args.ElementId).GetThing<GameObject>().SetActive(args.Active);
         }
         public void ElemSetTransform(RenderAction.Types.ElemSetTransform args)
         {
-            GetElement(args.ElementId).UnityGameObject.transform.SetLocalPositionAndRotation(
+            GetElement(args.ElementId).GetThing<GameObject>().transform.SetLocalPositionAndRotation(
                 new Vector3(args.Pos.X, args.Pos.Y, args.Pos.Z),
                 new Quaternion(args.Rot.X, args.Rot.Y, args.Rot.Z, args.Rot.W)
             );

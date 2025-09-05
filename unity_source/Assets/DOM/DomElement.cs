@@ -41,7 +41,7 @@ namespace DOM
 
             if (_occupied_roles.Remove(role, out var old_entry))
             {
-                _=_attached_resource_roles.Remove(old_entry.Item1);
+                _ = _attached_resource_roles.Remove(old_entry.Item1);
                 is_replacing = true;
             }
             _occupied_roles[role] = (resource_id, resource);

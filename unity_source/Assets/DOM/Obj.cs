@@ -1,5 +1,8 @@
 using GlobalDependency;
 using Host;
+using System.Linq;
+using System.Reflection;
+using System.Xml.Linq;
 using UnityEngine;
 
 #nullable enable
@@ -8,6 +11,7 @@ namespace DOM
     public sealed class Obj : DomElement
     {
         public readonly GameObject GameObject;
+        public bool IsGameObjectDestryRequired = false;
         public readonly MeshFilter MeshFilter;
         public readonly MeshRenderer MeshRenderer;
         public Obj(RendererBase renderer_base, int element_id) : base(renderer_base, element_id)
@@ -37,7 +41,18 @@ namespace DOM
         }
         protected override void ResourceAttachingCallback(ResourceRole role, StaticResource resource)
         {
-            Host.Mesh mesh = (resource as Host.Mesh)!;
+            if (resource is not Host.Mesh mesh)
+            {
+                if (resource is UnknownResource unknown_resource)
+                {
+                    // .GetType().GetMember(unknown_resource.Mime.ToString()).Single()
+                    //    .GetCustomAttribute<Google.Protobuf.Reflection.OriginalNameAttribute>();
+                    RuntimeCout.Print("warning:::unsupported MIME type for <obj> src: " + unknown_resource.Mime.ToString());
+                    return;
+                }
+                RuntimeCout.Print("warning:::unexpected resource type for <obj>: " + resource.GetType().ToString());
+                return;
+            }
             MeshFilter.mesh = mesh.UnityMesh;
         }
         protected override void ResourceReplacingCallback(ResourceRole role, StaticResource resource) =>
@@ -45,6 +60,12 @@ namespace DOM
         protected override void ResourceDetachingCallback(ResourceRole role)
         {
             MeshFilter.mesh = null;
+        }
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (IsGameObjectDestryRequired)
+                Object.Destroy(GameObject);
         }
     }
 }

@@ -1,4 +1,5 @@
 using AbyssCLI.ABI;
+using DOM;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -59,8 +60,23 @@ namespace GlobalDependency
         }
         public void DeleteElement(RenderAction.Types.DeleteElement args)
         {
-            if(_elements.Remove(args.ElementId, out var old_elem))
-                old_elem.Dispose();
+            if (_elements.Remove(args.ElementId, out var old_elem))
+            {
+                switch (old_elem)
+                {
+                case DOM.O o:
+                    o.IsGameObjectDestryRequired = true;
+                    o.Dispose();
+                    break;
+                case DOM.Obj obj:
+                    obj.IsGameObjectDestryRequired = true;
+                    obj.Dispose();
+                    break;
+                case DOM.Pbrm pbrm:
+                    pbrm.Dispose();
+                    break;
+                }
+            }
         }
         public void ElemSetActive(RenderAction.Types.ElemSetActive args)
         {

@@ -1,22 +1,33 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
+#nullable enable
 namespace Host
 {
     class Image : StaticResource
     {
-        public UnityEngine.Texture2D Texture;
+        public UnityEngine.Texture2D? Texture;
         byte[] _bytes;
         public Image(string file_name) : base(file_name)
         {
             _bytes = new byte[Size];
         }
+        private bool _is_inited = false;
         public override void Init()
         {
+            UnityThreadChecker.Check();
             Texture = new(2, 2);
+            _is_inited = true;
         }
-        public override void Update()
+        public override void UpdateMMFRead()
         {
+            if (!_is_inited)
+                throw new System.Exception("image not initialized");
+
+            if (Texture == null)
+                RuntimeCout.Print("texture is null");
+
+            UnityThreadChecker.Check();
             if (ConsumedSize == CurrentSize)
                 return;
 
@@ -27,6 +38,7 @@ namespace Host
                 CurrentSize - ConsumedSize
             );
             ConsumedSize = CurrentSize;
+
             _ = Texture.LoadImage(_bytes);
 
             if (ConsumedSize == Size)

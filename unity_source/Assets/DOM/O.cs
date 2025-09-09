@@ -8,6 +8,7 @@ namespace DOM
     public sealed class O : DomElement
     {
         public readonly GameObject GameObject;
+        public bool IsGameObjectDestryRequired = false;
         public O(RendererBase renderer_base, int element_id) : base(renderer_base, element_id)
         {
             GameObject = new GameObject(element_id.ToString());
@@ -35,5 +36,11 @@ namespace DOM
              => throw new System.NotImplementedException(); //this is impossible on O (For now)
         protected override void ResourceDetachingCallback(ResourceRole role)
              => throw new System.NotImplementedException(); //this is impossible on O (For now)
+        public override void Dispose()
+        {
+            base.Dispose();
+            if (IsGameObjectDestryRequired)
+                Object.Destroy(GameObject);
+        }
     }
 }

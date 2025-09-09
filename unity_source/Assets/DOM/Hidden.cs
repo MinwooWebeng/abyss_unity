@@ -45,5 +45,10 @@ namespace DOM
              => throw new System.NotImplementedException(); //this is impossible on O (For now)
         protected override void ResourceDetachingCallback(ResourceRole role)
              => throw new System.NotImplementedException(); //this is impossible on O (For now)
+        public override void Dispose()
+        {
+            base.Dispose();
+            Object.Destroy(GameObject);
+        }
     }
 }

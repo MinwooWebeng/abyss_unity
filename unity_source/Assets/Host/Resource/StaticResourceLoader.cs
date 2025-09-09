@@ -15,7 +15,7 @@ namespace Host
         private readonly CancellationTokenSource _cts = new();
         public Task _main_loop;
         public Action<Action> SynchronizedActionEnqueueCallback;
-        public Action<StaticResource> OnResourceFinialize;
+        //public Action<StaticResource> OnResourceFinialize;
         private bool _started = false;
         public void Start() { _main_loop = Task.Run(MainLoop); }
         private async Task MainLoop()
@@ -26,18 +26,16 @@ namespace Host
             var token = _cts.Token;
             while (!token.IsCancellationRequested)
             {
-                foreach (var entry in _resources)
+                var entries = _resources.ToArray();
+                foreach (var entry in entries)
                 {
                     if (entry.Value.IsMarkedDispose)
                     {
                         if (entry.Value.IsCheckedOut)
                             continue;
 
-                        SynchronizedActionEnqueueCallback(() =>
-                        {
-                            _ = _resources.Remove(entry.Key, out var resource);
-                            resource.Dispose();
-                        });
+                        _ = _resources.Remove(entry.Key, out var resource);
+                        SynchronizedActionEnqueueCallback(resource.Dispose);
                         entry.Value.IsCheckedOut = true;
                         continue;
                     }
@@ -45,8 +43,9 @@ namespace Host
                     var current_size = entry.Value.CurrentSize;
                     if (entry.Value.PrevSize != current_size)
                     {
-                        SynchronizedActionEnqueueCallback(entry.Value.Update);
+                        RuntimeCout.Print($"{entry.Value.CurrentSize}/{entry.Value.Size}");
                         entry.Value.PrevSize = current_size;
+                        SynchronizedActionEnqueueCallback(entry.Value.UpdateMMFRead);
                     }
                 }
                 await Task.Delay(50, token); //TODO: adaptive
@@ -55,11 +54,7 @@ namespace Host
 
         public bool TryAdd(int resource_id, StaticResource resource)
         {
-            SynchronizedActionEnqueueCallback(resource.Init);
-            if (!_resources.TryAdd(resource_id, resource))
-                return false;
-
-            return true;
+            return _resources.TryAdd(resource_id, resource);
         }
         public bool TryGetValue(int resource_id, out StaticResource resource) =>
             _resources.TryGetValue(resource_id, out resource);
@@ -88,10 +83,9 @@ namespace Host
                     _main_loop.Wait();
                     Logger.Writer.WriteLine("main loop terminated");
                 }
-                catch (TaskCanceledException) { }
                 catch (Exception ex)
                 {
-                    Logger.Writer.WriteLine("fatal(StaticResourceLoader.cs:Dispose():92)" + ex.ToString());
+                    RuntimeCout.Print("StaticResourceLoader Disposed: " + ex.ToString());
                 }
             }
 
@@ -153,7 +147,7 @@ namespace Host
         /// that references the resources are executed.
         /// </summary>
         public abstract void Init();
-        public abstract void Update();
+        public abstract void UpdateMMFRead();
 
         private bool _disposed = false;
         /// <summary>

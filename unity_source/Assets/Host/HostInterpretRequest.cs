@@ -17,6 +17,8 @@ namespace Host
         {
             RenderingActionQueue.Clear();
             _static_resource_loader.Dispose();
+
+            RuntimeCout.Clear();
         }
         public void InjectExecutorTarg(
             GlobalDependency.RendererBase renderer_base,
@@ -51,6 +53,8 @@ namespace Host
 
             _static_resource_loader.SynchronizedActionEnqueueCallback =
                 RenderingActionQueue.Enqueue;
+
+            RuntimeCout.Set(_ui_base.AppendConsole);
         }
         public void HostInterpretRequestStart()
         {
@@ -61,7 +65,7 @@ namespace Host
         {
             switch (render_action.InnerCase)
             {
-            case RenderAction.InnerOneofCase.ConsolePrint: RenderingActionQueue.Enqueue(ConsolePrint(render_action.ConsolePrint)); return;
+            case RenderAction.InnerOneofCase.ConsolePrint: RuntimeCout.Print(render_action.ConsolePrint.Text); return;
             case RenderAction.InnerOneofCase.CreateElement: RenderingActionQueue.Enqueue(() => _renderer_base.CreateElement(render_action.CreateElement)); return;
             case RenderAction.InnerOneofCase.MoveElement: RenderingActionQueue.Enqueue(() => _renderer_base.MoveElement(render_action.MoveElement)); return;
             case RenderAction.InnerOneofCase.DeleteElement: RenderingActionQueue.Enqueue(() => _renderer_base.DeleteElement(render_action.DeleteElement)); return;
@@ -87,14 +91,13 @@ namespace Host
             default: StderrQueue.Enqueue("Executor: invalid RenderAction: " + render_action.InnerCase); return;
             }
         }
-        private Action ConsolePrint(RenderAction.Types.ConsolePrint args) => () => _ui_base.AppendConsole(args.Text);
         private Action ElemAttachResource(RenderAction.Types.ElemAttachResource args)
         {
-            if (!_static_resource_loader.TryGetValue(args.ResourceId, out var resource))
-                throw new Exception("ElemAttachResource: resource not found");
-
             return () =>
             {
+                if (!_static_resource_loader.TryGetValue(args.ResourceId, out var resource))
+                    throw new Exception("ElemAttachResource: resource not found");
+
                 if (!_renderer_base._elements.TryGetValue(args.ElementId, out var element))
                     throw new Exception("ElemAttachResource: element not found");
 
@@ -135,14 +138,19 @@ namespace Host
         {
             StaticResource resource = args.Mime switch
             {
-                MIME.ModelObj => new Mesh(args.FileName),
+                MIME.ModelObj or MIME.ApplicationXTgif => new Mesh(args.FileName), //application/x-tgif is returned from legacy web servers that expect to serve x-11 .obj
                 MIME.ImageJpeg or MIME.ImagePng => new Image(args.FileName),
-                MIME any => throw new NotImplementedException("not implemented MIMEType: " + any.ToString()),
+                _ => new UnknownResource(args.FileName, args.Mime),
+                //MIME any => throw new NotImplementedException("not implemented MIMEType: " + any.ToString()),
             };
-            if (!_static_resource_loader.TryAdd(args.ResourceId, resource))
+            RenderingActionQueue.Enqueue(resource.Init);
+            RenderingActionQueue.Enqueue(() =>
             {
-                throw new InvalidOperationException("duplicate resource");
-            }
+                if (!_static_resource_loader.TryAdd(args.ResourceId, resource))
+                {
+                    throw new InvalidOperationException("duplicate resource");
+                }
+            });
         }
         private Action CloseResource(RenderAction.Types.CloseResource args) => () => { };
         private Action CreateCompositeResource(RenderAction.Types.CreateCompositeResource args) => () => { };

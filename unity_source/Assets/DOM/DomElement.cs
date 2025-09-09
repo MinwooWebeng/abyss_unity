@@ -66,6 +66,7 @@ namespace DOM
         protected abstract void ResourceAttachingCallback(ResourceRole role, StaticResource resource);
         protected abstract void ResourceReplacingCallback(ResourceRole role, StaticResource resource);
         protected abstract void ResourceDetachingCallback(ResourceRole role);
+
         public virtual void Dispose()
         {
             _parent = null;

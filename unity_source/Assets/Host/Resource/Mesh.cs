@@ -1,30 +1,46 @@
 using Dummiesman;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using UnityEngine;
 
+#nullable enable
 namespace Host
 {
     class Mesh : StaticResource
     {
-        public UnityEngine.Mesh UnityMesh;
-        public Mesh(string file_name) : base(file_name) { }
+        public UnityEngine.Mesh? UnityMesh;
+        public Mesh(string file_name) : base(file_name) {
+        }
+        private bool _is_inited = false;
         public override void Init()
         {
+            RuntimeCout.Print("Mesh Init: " + base.Size);
+            UnityThreadChecker.Check();
             UnityMesh = new();
+            _is_inited = true;
         }
-        public override void Update()
+        public override void UpdateMMFRead()
         {
+            if (!_is_inited)
+                throw new System.Exception("mesh not initialized");
+
+            UnityThreadChecker.Check();
+            RuntimeCout.Print($"info:::loading mesh size: {CurrentSize}/{Size} bytes");
+
             if (CurrentSize != Size)
                 throw new System.Exception("mesh file not loaded at once");
 
             var stream = _mmf.CreateViewStream(Marshal.SizeOf<StaticResourceHeader>(), Size);
             var result_gameobject = new OBJLoader().Load(stream);
-            OverwriteMesh(result_gameobject.transform.GetChild(0).GetComponent<MeshFilter>().sharedMesh, UnityMesh);
+            OverwriteMesh(result_gameobject.transform.GetChild(0).GetComponent<MeshFilter>().sharedMesh, UnityMesh!);
             UnityEngine.Object.Destroy(result_gameobject);
         }
         private static void OverwriteMesh(UnityEngine.Mesh src, UnityEngine.Mesh dst)
         {
+            if (src == null)
+                RuntimeCout.Print("src is null");
+            if (dst == null)
+                RuntimeCout.Print("dst is null");
+
             dst.Clear(keepVertexLayout: false);
             dst.indexFormat = src.indexFormat;
             dst.subMeshCount = src.subMeshCount;

@@ -11,7 +11,7 @@ namespace DOM
         public readonly Material Material;
         public Pbrm(RendererBase renderer_base, int element_id) : base(renderer_base, element_id)
         {
-            Material = RendererBase.ShaderLoader.Get("color");
+            Material = new(RendererBase.ShaderLoader.Get("color"));
         }
 
         public override T? GetThing<T>() where T : class
@@ -42,6 +42,11 @@ namespace DOM
                 ResourceRole.Albedo => "_MainTex",
                 _ => throw new InvalidOperationException("unexpected resource role"),
             });
+        }
+        public override void Dispose()
+        {
+            base.Dispose();
+            UnityEngine.Object.Destroy(Material);
         }
     }
 }

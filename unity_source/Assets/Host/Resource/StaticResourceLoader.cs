@@ -43,7 +43,6 @@ namespace Host
                     var current_size = entry.Value.CurrentSize;
                     if (entry.Value.PrevSize != current_size)
                     {
-                        RuntimeCout.Print($"{entry.Value.CurrentSize}/{entry.Value.Size}");
                         entry.Value.PrevSize = current_size;
                         SynchronizedActionEnqueueCallback(entry.Value.UpdateMMFRead);
                     }
@@ -52,9 +51,10 @@ namespace Host
             }
         }
 
-        public bool TryAdd(int resource_id, StaticResource resource)
+        public void Add(int resource_id, StaticResource resource)
         {
-            return _resources.TryAdd(resource_id, resource);
+            if (!_resources.TryAdd(resource_id, resource))
+                throw new InvalidOperationException("duplicate resource id");
         }
         public bool TryGetValue(int resource_id, out StaticResource resource) =>
             _resources.TryGetValue(resource_id, out resource);

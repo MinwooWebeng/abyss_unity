@@ -65,46 +65,42 @@ namespace Host
         {
             switch (render_action.InnerCase)
             {
-            case RenderAction.InnerOneofCase.ConsolePrint: RuntimeCout.Print(render_action.ConsolePrint.Text); return;
-            case RenderAction.InnerOneofCase.CreateElement: RenderingActionQueue.Enqueue(() => _renderer_base.CreateElement(render_action.CreateElement)); return;
-            case RenderAction.InnerOneofCase.MoveElement: RenderingActionQueue.Enqueue(() => _renderer_base.MoveElement(render_action.MoveElement)); return;
-            case RenderAction.InnerOneofCase.DeleteElement: RenderingActionQueue.Enqueue(() => _renderer_base.DeleteElement(render_action.DeleteElement)); return;
-            case RenderAction.InnerOneofCase.ElemSetActive: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetActive(render_action.ElemSetActive)); return;
-            case RenderAction.InnerOneofCase.ElemSetTransform: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetTransform(render_action.ElemSetTransform)); return;
-            case RenderAction.InnerOneofCase.ElemAttachResource: RenderingActionQueue.Enqueue(ElemAttachResource(render_action.ElemAttachResource)); return;
-            case RenderAction.InnerOneofCase.ElemDetachResource: RenderingActionQueue.Enqueue(ElemDetachResource(render_action.ElemDetachResource)); return;
-            case RenderAction.InnerOneofCase.CreateItem: RenderingActionQueue.Enqueue(CreateItem(render_action.CreateItem)); return;
-            case RenderAction.InnerOneofCase.DeleteItem: RenderingActionQueue.Enqueue(DeleteItem(render_action.DeleteItem)); return;
-            case RenderAction.InnerOneofCase.ItemSetTitle: RenderingActionQueue.Enqueue(ItemSetTitle(render_action.ItemSetTitle)); return;
-            case RenderAction.InnerOneofCase.ItemSetIcon: RenderingActionQueue.Enqueue(ItemSetIcon(render_action.ItemSetIcon)); return;
-            case RenderAction.InnerOneofCase.ItemSetActive: RenderingActionQueue.Enqueue(ItemSetActive(render_action.ItemSetActive)); return;
-            case RenderAction.InnerOneofCase.ItemAlert: RenderingActionQueue.Enqueue(ItemAlert(render_action.ItemAlert)); return;
-            case RenderAction.InnerOneofCase.OpenStaticResource: OpenStaticResource(render_action.OpenStaticResource); return;
-            case RenderAction.InnerOneofCase.CreateCompositeResource: RenderingActionQueue.Enqueue(CreateCompositeResource(render_action.CreateCompositeResource)); return;
-            case RenderAction.InnerOneofCase.CloseResource: RenderingActionQueue.Enqueue(CloseResource(render_action.CloseResource)); return;
-            case RenderAction.InnerOneofCase.MemberInfo: RenderingActionQueue.Enqueue(MemberInfo(render_action.MemberInfo)); return;
-            case RenderAction.InnerOneofCase.MemberLeave: RenderingActionQueue.Enqueue(MemberLeave(render_action.MemberLeave)); return;
-            case RenderAction.InnerOneofCase.MemberSetProfile: RenderingActionQueue.Enqueue(MemberSetProfile(render_action.MemberSetProfile)); return;
-            case RenderAction.InnerOneofCase.LocalInfo: RenderingActionQueue.Enqueue(LocalInfo(render_action.LocalInfo)); return;
-            case RenderAction.InnerOneofCase.InfoContentShared: RenderingActionQueue.Enqueue(InfoContentShared(render_action.InfoContentShared)); return;
-            case RenderAction.InnerOneofCase.InfoContentDeleted: RenderingActionQueue.Enqueue(InfoContentDeleted(render_action.InfoContentDeleted)); return;
-            default: StderrQueue.Enqueue("Executor: invalid RenderAction: " + render_action.InnerCase); return;
+            case RenderAction.InnerOneofCase.ConsolePrint: RuntimeCout.Print(render_action.ConsolePrint.Text);return;
+            case RenderAction.InnerOneofCase.CreateElement: RenderingActionQueue.Enqueue(() => _renderer_base.CreateElement(render_action.CreateElement));return;
+            case RenderAction.InnerOneofCase.MoveElement: RenderingActionQueue.Enqueue(() => _renderer_base.MoveElement(render_action.MoveElement));return;
+            case RenderAction.InnerOneofCase.DeleteElement: RenderingActionQueue.Enqueue(() => _renderer_base.DeleteElement(render_action.DeleteElement));return;
+            case RenderAction.InnerOneofCase.ElemSetActive: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetActive(render_action.ElemSetActive));return;
+            case RenderAction.InnerOneofCase.ElemSetTransform: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetTransform(render_action.ElemSetTransform));return;
+            case RenderAction.InnerOneofCase.ElemAttachResource: ElemAttachResource(render_action.ElemAttachResource);return;
+            case RenderAction.InnerOneofCase.ElemDetachResource: ElemDetachResource(render_action.ElemDetachResource);return;
+            case RenderAction.InnerOneofCase.CreateItem: RenderingActionQueue.Enqueue(CreateItem(render_action.CreateItem));return;
+            case RenderAction.InnerOneofCase.DeleteItem: RenderingActionQueue.Enqueue(DeleteItem(render_action.DeleteItem));return;
+            case RenderAction.InnerOneofCase.ItemSetTitle: RenderingActionQueue.Enqueue(ItemSetTitle(render_action.ItemSetTitle));return;
+            case RenderAction.InnerOneofCase.ItemSetIcon: RenderingActionQueue.Enqueue(ItemSetIcon(render_action.ItemSetIcon));return;
+            case RenderAction.InnerOneofCase.ItemSetActive: RenderingActionQueue.Enqueue(ItemSetActive(render_action.ItemSetActive));return;
+            case RenderAction.InnerOneofCase.ItemAlert: RenderingActionQueue.Enqueue(ItemAlert(render_action.ItemAlert));return;
+            case RenderAction.InnerOneofCase.OpenStaticResource: OpenStaticResource(render_action.OpenStaticResource);return;
+            case RenderAction.InnerOneofCase.CreateCompositeResource: RenderingActionQueue.Enqueue(CreateCompositeResource(render_action.CreateCompositeResource));return;
+            case RenderAction.InnerOneofCase.CloseResource: RenderingActionQueue.Enqueue(CloseResource(render_action.CloseResource));return;
+            case RenderAction.InnerOneofCase.MemberInfo: RenderingActionQueue.Enqueue(MemberInfo(render_action.MemberInfo));return;
+            case RenderAction.InnerOneofCase.MemberLeave: RenderingActionQueue.Enqueue(MemberLeave(render_action.MemberLeave));return;
+            case RenderAction.InnerOneofCase.MemberSetProfile: RenderingActionQueue.Enqueue(MemberSetProfile(render_action.MemberSetProfile));return;
+            case RenderAction.InnerOneofCase.LocalInfo: RenderingActionQueue.Enqueue(LocalInfo(render_action.LocalInfo));return;
+            case RenderAction.InnerOneofCase.InfoContentShared: RenderingActionQueue.Enqueue(InfoContentShared(render_action.InfoContentShared));return;
+            case RenderAction.InnerOneofCase.InfoContentDeleted: RenderingActionQueue.Enqueue(InfoContentDeleted(render_action.InfoContentDeleted));return;
+            default: StderrQueue.Enqueue("Executor: invalid RenderAction: " + render_action.InnerCase);return;
             }
         }
-        private Action ElemAttachResource(RenderAction.Types.ElemAttachResource args)
+        private void ElemAttachResource(RenderAction.Types.ElemAttachResource args)
         {
-            return () =>
-            {
-                if (!_static_resource_loader.TryGetValue(args.ResourceId, out var resource))
-                    throw new Exception("ElemAttachResource: resource not found");
+            if (!_static_resource_loader.TryGetValue(args.ResourceId, out var resource))
+                throw new Exception("ElemAttachResource: resource not found");
 
-                if (!_renderer_base._elements.TryGetValue(args.ElementId, out var element))
-                    throw new Exception("ElemAttachResource: element not found");
-
-                element.AttachResource(args.ResourceId, resource, args.Role);
-            };
+            RenderingActionQueue.Enqueue(
+                () => _renderer_base.GetElement(args.ElementId).AttachResource(args.ResourceId, resource, args.Role));
         }
-        private Action ElemDetachResource(RenderAction.Types.ElemDetachResource args) => () => { };
+        private void ElemDetachResource(RenderAction.Types.ElemDetachResource args) =>
+            RenderingActionQueue.Enqueue(() => _renderer_base.GetElement(args.ElementId).DetachResource(args.ResourceId));
         private Action CreateItem(RenderAction.Types.CreateItem args) => () =>
         {
             //if (args.SharerHash == GlobalDependency.UserInfo.LocalHash) { }
@@ -141,16 +137,9 @@ namespace Host
                 MIME.ModelObj or MIME.ApplicationXTgif => new Mesh(args.FileName), //application/x-tgif is returned from legacy web servers that expect to serve x-11 .obj
                 MIME.ImageJpeg or MIME.ImagePng => new Image(args.FileName),
                 _ => new UnknownResource(args.FileName, args.Mime),
-                //MIME any => throw new NotImplementedException("not implemented MIMEType: " + any.ToString()),
             };
             RenderingActionQueue.Enqueue(resource.Init);
-            RenderingActionQueue.Enqueue(() =>
-            {
-                if (!_static_resource_loader.TryAdd(args.ResourceId, resource))
-                {
-                    throw new InvalidOperationException("duplicate resource");
-                }
-            });
+            _static_resource_loader.Add(args.ResourceId, resource);
         }
         private Action CloseResource(RenderAction.Types.CloseResource args) => () => { };
         private Action CreateCompositeResource(RenderAction.Types.CreateCompositeResource args) => () => { };

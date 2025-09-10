@@ -35,14 +35,14 @@ public class Executor : MonoBehaviour
             }
 
             if ((DateTime.Now - time_begin) > TimeSpan.FromMilliseconds(10))
-                return;
+                break;
         }
         while (_host.StderrQueue.TryDequeue(out var err_msg))
         {
             RuntimeCout.Print("Engine:::StdErr>> " + err_msg);
 
             if ((DateTime.Now - time_begin) < TimeSpan.FromMilliseconds(16))
-                return;
+                break;
         }
     }
     void OnDisable()

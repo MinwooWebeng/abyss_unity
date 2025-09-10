@@ -13,8 +13,6 @@ namespace Host
         private bool _is_inited = false;
         public override void Init()
         {
-            RuntimeCout.Print("Mesh Init: " + base.Size);
-            UnityThreadChecker.Check();
             UnityMesh = new();
             _is_inited = true;
         }
@@ -22,9 +20,6 @@ namespace Host
         {
             if (!_is_inited)
                 throw new System.Exception("mesh not initialized");
-
-            UnityThreadChecker.Check();
-            RuntimeCout.Print($"info:::loading mesh size: {CurrentSize}/{Size} bytes");
 
             if (CurrentSize != Size)
                 throw new System.Exception("mesh file not loaded at once");
@@ -36,11 +31,6 @@ namespace Host
         }
         private static void OverwriteMesh(UnityEngine.Mesh src, UnityEngine.Mesh dst)
         {
-            if (src == null)
-                RuntimeCout.Print("src is null");
-            if (dst == null)
-                RuntimeCout.Print("dst is null");
-
             dst.Clear(keepVertexLayout: false);
             dst.indexFormat = src.indexFormat;
             dst.subMeshCount = src.subMeshCount;

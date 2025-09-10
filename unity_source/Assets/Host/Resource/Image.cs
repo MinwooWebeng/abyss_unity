@@ -7,7 +7,7 @@ namespace Host
     class Image : StaticResource
     {
         public UnityEngine.Texture2D? Texture;
-        byte[] _bytes;
+        byte[]? _bytes;
         public Image(string file_name) : base(file_name)
         {
             _bytes = new byte[Size];
@@ -15,18 +15,11 @@ namespace Host
         private bool _is_inited = false;
         public override void Init()
         {
-            UnityThreadChecker.Check();
             Texture = new(2, 2);
             _is_inited = true;
         }
         public override void UpdateMMFRead()
         {
-            if (!_is_inited)
-                throw new System.Exception("image not initialized");
-
-            if (Texture == null)
-                RuntimeCout.Print("texture is null");
-
             UnityThreadChecker.Check();
             if (ConsumedSize == CurrentSize)
                 return;

@@ -8,8 +8,6 @@ namespace DOM
 {
     public abstract class DomElement : IDisposable
     {
-        protected RendererBase RendererBase;
-
         public readonly int ElementId;
         private DomElement? _parent;
         private readonly List<DomElement> _children = new();
@@ -17,9 +15,8 @@ namespace DOM
         private readonly Dictionary<int, (StaticResource, ResourceRole)> _attached_resource_roles = new();
         private readonly Dictionary<ResourceRole, (int, StaticResource)> _occupied_roles = new();
 
-        public DomElement(RendererBase renderer_base, int element_id)
+        public DomElement(int element_id)
         {
-            RendererBase = renderer_base;
             ElementId = element_id;
         }
         public abstract T? GetThing<T>() where T : class;

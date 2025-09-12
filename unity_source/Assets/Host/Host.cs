@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Threading;
 
+#nullable enable
 namespace Host
 {
     /// <summary>
@@ -13,15 +14,31 @@ namespace Host
     /// </summary>
     public partial class Host : IDisposable
     {
+        private readonly GlobalDependency.RendererBase _renderer_base;
+        private readonly GlobalDependency.UIBase _ui_base;
+        private readonly GlobalDependency.InteractionBase _interaction_base;
+
         private readonly EngineCom.EngineCom _engine_com;
         private readonly Thread _rx_thread;
         private readonly Thread _rx_stderr_thread;
 
-        public UIActionWriter Tx => _engine_com.Tx;
+        public readonly ConcurrentQueue<Action> RenderingActionQueue = new();
         public readonly ConcurrentQueue<string> StderrQueue = new();
 
-        public Host()
+        private readonly StaticResourceLoader _static_resource_loader = new();
+
+        public UIActionWriter Tx => _engine_com.Tx;
+
+        public Host(
+            GlobalDependency.RendererBase renderer_base,
+            GlobalDependency.UIBase ui_base,
+            GlobalDependency.InteractionBase interaction_base)
         {
+            //prepare dependencies
+            _renderer_base = renderer_base;
+            _ui_base = ui_base;
+            _interaction_base = interaction_base;
+
             //find root key from current directory
             string[] pemFiles = Directory.GetFiles(".", "*.pem", SearchOption.TopDirectoryOnly);
             if (pemFiles.Length == 0)
@@ -36,7 +53,7 @@ namespace Host
         {
             _rx_thread.Start();
             _rx_stderr_thread.Start();
-            HostInterpretRequestStart();
+            _static_resource_loader.Start();
         }
 
         private void RxLoop()
@@ -76,6 +93,8 @@ namespace Host
         private bool _disposed;
         public void Dispose()
         {
+            GlobalDependency.UnityThreadChecker.Check();
+
             if (_disposed) return;
             _disposed = true;
 
@@ -85,7 +104,8 @@ namespace Host
             _rx_stderr_thread.Join();
             _engine_com.Dispose();
 
-            HostInterpretRequestDispose();
+            RenderingActionQueue.Clear();
+            _static_resource_loader.Dispose();
         }
     }
 }

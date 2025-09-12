@@ -1,4 +1,3 @@
-using GlobalDependency;
 using Host;
 using UnityEngine;
 
@@ -8,7 +7,7 @@ namespace DOM
     public sealed class Hidden : DomElement
     {
         public readonly GameObject GameObject;
-        public Hidden(RendererBase renderer_base, int element_id) : base(renderer_base, element_id)
+        public Hidden(int element_id) : base(element_id)
         {
             GameObject = new GameObject(element_id.ToString());
         }

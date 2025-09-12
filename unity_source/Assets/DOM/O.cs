@@ -9,7 +9,7 @@ namespace DOM
     {
         public readonly GameObject GameObject;
         public bool IsGameObjectDestryRequired = false;
-        public O(RendererBase renderer_base, int element_id) : base(renderer_base, element_id)
+        public O(int element_id) : base(element_id)
         {
             GameObject = new GameObject(element_id.ToString());
         }

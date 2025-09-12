@@ -14,7 +14,7 @@ namespace DOM
         public bool IsGameObjectDestryRequired = false;
         public readonly MeshFilter MeshFilter;
         public readonly MeshRenderer MeshRenderer;
-        public Obj(RendererBase renderer_base, int element_id) : base(renderer_base, element_id)
+        public Obj(int element_id) : base(element_id)
         {
             GameObject = new GameObject(element_id.ToString());
             MeshFilter = GameObject.AddComponent<MeshFilter>();

@@ -2,32 +2,17 @@ using AbyssCLI.ABI;
 using Google.Protobuf;
 using System;
 using System.Collections.Concurrent;
+using Unity.VisualScripting;
+using UnityEngine;
 
 #nullable enable
 namespace Host
 {
     partial class Host
     {
-        public ConcurrentQueue<Action> RenderingActionQueue = new();
-        private GlobalDependency.RendererBase _renderer_base;
-        private GlobalDependency.UIBase _ui_base;
-        private GlobalDependency.InteractionBase _interaction_base;
-        private readonly StaticResourceLoader _static_resource_loader = new();
-        public void HostInterpretRequestDispose()
+        public void Init()
         {
-            RenderingActionQueue.Clear();
-            _static_resource_loader.Dispose();
-
-            RuntimeCout.Clear();
-        }
-        public void InjectExecutorTarg(
-            GlobalDependency.RendererBase renderer_base,
-            GlobalDependency.UIBase ui_base,
-            GlobalDependency.InteractionBase interaction_base)
-        {
-            _renderer_base = renderer_base;
-            _ui_base = ui_base;
-            _interaction_base = interaction_base;
+            GlobalDependency.UnityThreadChecker.Check();
 
             _ui_base.OnAddressBarSubmit = (arg) => Tx.MoveWorld(arg);
             _ui_base.OnSubAddressBarSubmit = (arg) =>
@@ -53,19 +38,13 @@ namespace Host
 
             _static_resource_loader.SynchronizedActionEnqueueCallback =
                 RenderingActionQueue.Enqueue;
-
-            RuntimeCout.Set(_ui_base.AppendConsole);
-        }
-        public void HostInterpretRequestStart()
-        {
-            _static_resource_loader.Start();
         }
 
         private void InterpretRequest(RenderAction render_action)
         {
             switch (render_action.InnerCase)
             {
-            case RenderAction.InnerOneofCase.ConsolePrint: RuntimeCout.Print(render_action.ConsolePrint.Text);return;
+            case RenderAction.InnerOneofCase.ConsolePrint: GlobalDependency.RuntimeCout.Print(render_action.ConsolePrint.Text);return;
             case RenderAction.InnerOneofCase.CreateElement: RenderingActionQueue.Enqueue(() => _renderer_base.CreateElement(render_action.CreateElement));return;
             case RenderAction.InnerOneofCase.MoveElement: RenderingActionQueue.Enqueue(() => _renderer_base.MoveElement(render_action.MoveElement));return;
             case RenderAction.InnerOneofCase.DeleteElement: RenderingActionQueue.Enqueue(() => _renderer_base.DeleteElement(render_action.DeleteElement));return;
@@ -103,30 +82,63 @@ namespace Host
             RenderingActionQueue.Enqueue(() => _renderer_base.GetElement(args.ElementId).DetachResource(args.ResourceId));
         private Action CreateItem(RenderAction.Types.CreateItem args) => () =>
         {
-            //if (args.SharerHash == GlobalDependency.UserInfo.LocalHash) { }
-            ////TODO _ui_base.LocalItemSection.CreateItem(this, args.ElementId, new(args.Uuid.ToByteArray()));
-            //else
-            //    _ui_base.MemberItemSection.CreateItem(args.SharerHash, args.ElementId);
+            if (args.SharerHash == GlobalDependency.Statics.LocalHash)
+            {
+                _ui_base.LocalItemSection.AddItem(args.ElementId, new Guid(args.Uuid.Span));
+            }
+            else
+            {
+                GlobalDependency.RuntimeCout.Print("member item UI not implemented 1");
+            }
         };
-        private Action DeleteItem(RenderAction.Types.DeleteItem args) => () => { };
+        private Action DeleteItem(RenderAction.Types.DeleteItem args) => () =>
+        {
+            if (_ui_base.LocalItemSection.TryRemoveItem(args.ElementId)) 
+                return;
+
+            GlobalDependency.RuntimeCout.Print("member item UI not implemented 2");
+        };
         private Action ItemSetTitle(RenderAction.Types.ItemSetTitle args) => () => { };
         private Action ItemSetIcon(RenderAction.Types.ItemSetIcon args)
         {
+            bool is_clear = args.ElementId == 0;
+            StaticResource? resource = null;
+            if (!is_clear && !_static_resource_loader.TryGetValue(args.ResourceId, out resource))
+                throw new InvalidOperationException("resource not found");
+
             if (args.ElementId == 0) //world environment
             {
-                if (args.ResourceId == 0) //default icon
+                if (is_clear) //default icon
                     return _ui_base.ClearWorldIcon;
 
-                if (!_static_resource_loader.TryGetValue(args.ResourceId, out var icon_resource))
-                    throw new InvalidOperationException("resource not found");
-
-                return icon_resource switch
+                return resource switch
                 {
                     Image image => () => _ui_base.SetWorldIcon(image.Texture),
                     _ => () => { }
                 };
             }
-            return () => { };
+
+            return () =>
+            {
+                if (is_clear)
+                {
+                    if (_ui_base.LocalItemSection.TryUpdateIcon(args.ElementId, _ui_base.DefaultItemIcon))
+                        return;
+
+                    GlobalDependency.RuntimeCout.Print("member item UI not implemented 3");
+                }
+                else
+                {
+                    if (_ui_base.LocalItemSection.TryUpdateIcon(args.ElementId, resource switch
+                    {
+                        Image image => image.Texture,
+                        _ => _ui_base.DefaultItemIcon
+                    }))
+                        return;
+
+                    GlobalDependency.RuntimeCout.Print("member item UI not implemented 4");
+                }
+            };
         }
         private Action ItemSetActive(RenderAction.Types.ItemSetActive args) => () => { };
         private Action ItemAlert(RenderAction.Types.ItemAlert args) => () => { };
@@ -148,8 +160,9 @@ namespace Host
         private Action MemberLeave(RenderAction.Types.MemberLeave args) => () => { };
         private Action LocalInfo(RenderAction.Types.LocalInfo args) => () =>
         {
-            GlobalDependency.UserInfo.LocalHash = args.LocalHash;
-            GlobalDependency.UserInfo.LocalHostAurl = args.Aurl;
+            GlobalDependency.Statics.LocalHash = args.LocalHash;
+            GlobalDependency.Statics.LocalHostAurl = args.Aurl;
+            _ui_base.SetLocalInfo(args.LocalHash);
         };
         private Action InfoContentShared(RenderAction.Types.InfoContentShared args) => () => { };
         private Action InfoContentDeleted(RenderAction.Types.InfoContentDeleted args) => () => { };

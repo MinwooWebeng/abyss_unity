@@ -1,8 +1,6 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,8 +12,8 @@ namespace GlobalDependency
 
         //editor
         [SerializeField] private UIDocument uiDocument;
-        public Texture2D defaultItemIcon;
-        public Texture2D defaultMemberProfile;
+        public Texture2D DefaultItemIcon;
+        public Texture2D DefaultMemberProfile;
 
         //OnEnable
         private VisualElement root;
@@ -68,11 +66,11 @@ namespace GlobalDependency
                     OnConsoleCommand(consoleInputBar.value);
             });
 
-            LocalItemSection = new(UQueryExtensions.Q(root, "itembar"), defaultItemIcon);
+            LocalItemSection = new(UQueryExtensions.Q(root, "itembar"), DefaultItemIcon);
 
-            MemberItemSection = new(UQueryExtensions.Q(root, "memberitemsection"), defaultItemIcon);
+            MemberItemSection = new(UQueryExtensions.Q(root, "memberitemsection"), DefaultItemIcon);
 
-            MemberProfileSection = new(UQueryExtensions.Q(root, "memberprofilesection"), defaultMemberProfile);
+            MemberProfileSection = new(UQueryExtensions.Q(root, "memberprofilesection"), DefaultMemberProfile);
             MemberProfileSection.RegisterClickCallback(peer_hash =>
             {
                 MemberItemSection.Show(peer_hash);
@@ -170,6 +168,10 @@ namespace GlobalDependency
         public void ClearWorldIcon()
         {
             root.style.backgroundImage = null;
+        }
+        public void SetLocalInfo(string hash)
+        {
+            localAddrLabel.text = hash;
         }
     }
 }

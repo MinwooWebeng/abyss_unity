@@ -67,7 +67,7 @@ namespace GlobalDependency
         public void ClearMaterialTexture(Material target, string mat_name, string param_name)
         {
             var id = _parameter_id_maps[mat_name][param_name];
-            target.SetTexture(_parameter_id_maps[mat_name][param_name], new Texture2D(2, 2));
+            target.SetTexture(id, new Texture2D(2, 2));
         }
     }
 }

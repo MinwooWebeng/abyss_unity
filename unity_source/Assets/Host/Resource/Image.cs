@@ -12,25 +12,24 @@ namespace Host
         {
             _bytes = new byte[Size];
         }
-        private bool _is_inited = false;
         public override void Init()
         {
             Texture = new(2, 2);
-            _is_inited = true;
         }
         public override void UpdateMMFRead()
         {
-            UnityThreadChecker.Check();
-            if (ConsumedSize == CurrentSize)
+            var current_size = CurrentSize;
+
+            if (ConsumedSize == current_size)
                 return;
 
             _ = _accessor.ReadArray(
                 Marshal.SizeOf<StaticResourceHeader>() + ConsumedSize, 
                 _bytes,
-                ConsumedSize, 
-                CurrentSize - ConsumedSize
+                ConsumedSize,
+                current_size - ConsumedSize
             );
-            ConsumedSize = CurrentSize;
+            ConsumedSize = current_size;
 
             _ = Texture.LoadImage(_bytes);
 

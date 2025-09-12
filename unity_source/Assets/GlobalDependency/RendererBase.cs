@@ -8,7 +8,6 @@ namespace GlobalDependency
 {
     public class RendererBase : MonoBehaviour
     {
-        public CommonShaderLoader ShaderLoader;
         // in current implementation, element is GameObject
         [HideInInspector] public Dictionary<int, DOM.DomElement> _elements;
         [HideInInspector] public DOM.DomElement _nil_root;
@@ -17,9 +16,9 @@ namespace GlobalDependency
         [HideInInspector] public Dictionary<int, object> _resources;
         void OnEnable()
         {
-            _nil_root = new DOM.Hidden(this, -1);
+            _nil_root = new DOM.Hidden(-1);
             _nil_root.GetThing<GameObject>().SetActive(false);
-            _root = new DOM.O(this, 0);
+            _root = new DOM.O(0);
             _elements = new()
             {
                 [-1] = _nil_root,
@@ -46,9 +45,9 @@ namespace GlobalDependency
         {
             DOM.DomElement element = args.Tag switch
             {
-                ElementTag.O => new DOM.O(this, args.ElementId),
-                ElementTag.Obj => new DOM.Obj(this, args.ElementId),
-                ElementTag.Pbrm => new DOM.Pbrm(this, args.ElementId),
+                ElementTag.O => new DOM.O(args.ElementId),
+                ElementTag.Obj => new DOM.Obj(args.ElementId),
+                ElementTag.Pbrm => new DOM.Pbrm(args.ElementId),
                 _ => throw new NotImplementedException("ElementTag not implemented")
             };
             element.SetParent(GetElement(args.ParentId));

@@ -387,6 +387,7 @@ MonoBehaviour:
   RendererBase: {fileID: 1223243582}
   UIBase: {fileID: 8648849958789343001}
   InteractionBase: {fileID: 5370864531311374810}
+  ShaderLoader: {fileID: 1223243580}
 --- !u!114 &1223243582
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,7 +400,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcdd313910dca4d45a14e834d2eddaed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShaderLoader: {fileID: 1223243580}
 --- !u!114 &940586177416233047
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -542,8 +542,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 940586177416233047}
-  defaultItemIcon: {fileID: 2346436936791262179, guid: 658586cd7e83aae4ab13d74793759458, type: 3}
-  defaultMemberProfile: {fileID: 2346436936791262179, guid: 658586cd7e83aae4ab13d74793759458, type: 3}
+  DefaultItemIcon: {fileID: 7433338533053954386, guid: 658586cd7e83aae4ab13d74793759458, type: 3}
+  DefaultMemberProfile: {fileID: -1087164816274819069, guid: 658586cd7e83aae4ab13d74793759458, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

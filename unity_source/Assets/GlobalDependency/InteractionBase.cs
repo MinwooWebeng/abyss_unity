@@ -22,6 +22,10 @@ namespace GlobalDependency
         private InputAction mainReturnAction;
 
         public Transform GetContentSpawnPos() => cameraMover.transform;
+        private void Start()
+        {
+            Application.targetFrameRate = 120;
+        }
         void Awake()
         {
             //main

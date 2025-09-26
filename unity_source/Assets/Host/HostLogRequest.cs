@@ -34,6 +34,8 @@ namespace Host
             case RenderAction.InnerOneofCase.LocalInfo: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.LocalInfo)); return;
             case RenderAction.InnerOneofCase.InfoContentShared: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.InfoContentShared)); return;
             case RenderAction.InnerOneofCase.InfoContentDeleted: GlobalDependency.Logger.Writer.WriteLine(FormatFlatLogLine(render_action.InfoContentDeleted)); return;
+            case RenderAction.InnerOneofCase.DebugEnter: return;
+            case RenderAction.InnerOneofCase.DebugLeave: return;
             default: StderrQueue.Enqueue("Executor: invalid RenderAction: " + render_action.InnerCase); return;
             }
         }

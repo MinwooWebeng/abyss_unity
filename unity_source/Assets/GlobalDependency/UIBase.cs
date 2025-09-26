@@ -20,8 +20,10 @@ namespace GlobalDependency
         private TextField addressBar;
         private TextField sub_addressBar;
         private Label localAddrLabel;
-        private Label extraLabel; //TODO
+        private Label extraLabel;
         private TextField consoleInputBar;
+        private Label frameTime;
+        private Label debugStack;
 
         [HideInInspector] public LocalItemSection LocalItemSection;
         [HideInInspector] public MemberItemSection MemberItemSection;
@@ -65,6 +67,9 @@ namespace GlobalDependency
                 if (x.keyCode == KeyCode.Return)
                     OnConsoleCommand(consoleInputBar.value);
             });
+
+            frameTime = UQueryExtensions.Q<Label>(root, "frame-time");
+            debugStack = UQueryExtensions.Q<Label>(root, "debug-stack");
 
             LocalItemSection = new(UQueryExtensions.Q(root, "itembar"), DefaultItemIcon);
 
@@ -172,6 +177,26 @@ namespace GlobalDependency
         public void SetLocalInfo(string hash)
         {
             localAddrLabel.text = hash;
+        }
+        public void SetFrameTime(string info)
+        {
+            frameTime.text = info;
+        }
+
+        public void DebugEnter(string msg)
+        {
+            debugStack.text = debugStack.text + "->" + msg;
+        }
+        public void DebugLeave(string msg)
+        {
+            if (debugStack.text.EndsWith("->" + msg))
+            {
+                debugStack.text = debugStack.text[..(debugStack.text.Length - msg.Length - 2)];
+            }
+            else
+            {
+                debugStack.text = debugStack.text + "(X-)" + msg;
+            }
         }
     }
 }

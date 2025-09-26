@@ -67,6 +67,8 @@ namespace Host
             case RenderAction.InnerOneofCase.LocalInfo: RenderingActionQueue.Enqueue(LocalInfo(render_action.LocalInfo));return;
             case RenderAction.InnerOneofCase.InfoContentShared: RenderingActionQueue.Enqueue(InfoContentShared(render_action.InfoContentShared));return;
             case RenderAction.InnerOneofCase.InfoContentDeleted: RenderingActionQueue.Enqueue(InfoContentDeleted(render_action.InfoContentDeleted));return;
+            case RenderAction.InnerOneofCase.DebugEnter: RenderingActionQueue.Enqueue(() => _ui_base.DebugEnter(render_action.DebugEnter.Msg));return;
+            case RenderAction.InnerOneofCase.DebugLeave: RenderingActionQueue.Enqueue(() => _ui_base.DebugLeave(render_action.DebugLeave.Msg));return;
             default: StderrQueue.Enqueue("Executor: invalid RenderAction: " + render_action.InnerCase);return;
             }
         }

@@ -1,5 +1,5 @@
 # abyss_unity
-Unity 3D abyss game engine
+Unity 3D Abyss rendering engine
 
 ## Overall Structure
 <h3> Executor : MonoBehavior </h3>

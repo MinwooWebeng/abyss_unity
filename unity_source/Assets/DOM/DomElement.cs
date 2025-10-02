@@ -63,6 +63,7 @@ namespace DOM
         protected abstract void ResourceAttachingCallback(ResourceRole role, StaticResource resource);
         protected abstract void ResourceReplacingCallback(ResourceRole role, StaticResource resource);
         protected abstract void ResourceDetachingCallback(ResourceRole role);
+        public virtual void SetValueF(ValueRole role, float value) => throw new NotImplementedException();
 
         public virtual void Dispose()
         {

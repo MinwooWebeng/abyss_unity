@@ -481,6 +481,7 @@ MonoBehaviour:
   actions: {fileID: -944628639613478452, guid: ed3b3c8ae609e5242a1023ecf98522c4, type: 3}
   uiHandler: {fileID: 8648849958789343001}
   cameraMover: {fileID: 963194229}
+  viewDirection: {fileID: 963194228}
 --- !u!4 &5918955796778511028
 Transform:
   m_ObjectHideFlags: 0

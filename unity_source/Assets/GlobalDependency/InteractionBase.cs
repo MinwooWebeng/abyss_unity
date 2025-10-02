@@ -11,6 +11,8 @@ namespace GlobalDependency
 
         [SerializeField] private TemporalCameraMover cameraMover;
 
+        [SerializeField] private Transform viewDirection;
+
         //main
         private InputAction viewAction;
         private InputAction moveAction;
@@ -68,6 +70,17 @@ namespace GlobalDependency
             if (moveVector != Vector3.zero)
             {
                 cameraMover.Move(moveVector * Time.deltaTime);
+            }
+
+            //lookat
+            Ray ray = new(viewDirection.position, viewDirection.forward);
+            if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f))
+            {
+                Debug.DrawLine(ray.origin, hitInfo.point, Color.red);
+            }
+            else
+            {
+                Debug.DrawRay(ray.origin, ray.direction * 100f, Color.green);
             }
         }
         private void OnJump(InputAction.CallbackContext context)

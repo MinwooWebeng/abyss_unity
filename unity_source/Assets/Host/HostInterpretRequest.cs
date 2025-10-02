@@ -1,9 +1,6 @@
 using AbyssCLI.ABI;
 using Google.Protobuf;
 using System;
-using System.Collections.Concurrent;
-using Unity.VisualScripting;
-using UnityEngine;
 
 #nullable enable
 namespace Host
@@ -52,6 +49,7 @@ namespace Host
             case RenderAction.InnerOneofCase.ElemSetTransform: RenderingActionQueue.Enqueue(() => _renderer_base.ElemSetTransform(render_action.ElemSetTransform));return;
             case RenderAction.InnerOneofCase.ElemAttachResource: ElemAttachResource(render_action.ElemAttachResource);return;
             case RenderAction.InnerOneofCase.ElemDetachResource: ElemDetachResource(render_action.ElemDetachResource);return;
+            case RenderAction.InnerOneofCase.ElemSetValueF: ElemSetValueF(render_action.ElemSetValueF);return;
             case RenderAction.InnerOneofCase.CreateItem: RenderingActionQueue.Enqueue(CreateItem(render_action.CreateItem));return;
             case RenderAction.InnerOneofCase.DeleteItem: RenderingActionQueue.Enqueue(DeleteItem(render_action.DeleteItem));return;
             case RenderAction.InnerOneofCase.ItemSetTitle: RenderingActionQueue.Enqueue(ItemSetTitle(render_action.ItemSetTitle));return;
@@ -82,6 +80,8 @@ namespace Host
         }
         private void ElemDetachResource(RenderAction.Types.ElemDetachResource args) =>
             RenderingActionQueue.Enqueue(() => _renderer_base.GetElement(args.ElementId).DetachResource(args.ResourceId));
+        private void ElemSetValueF(RenderAction.Types.ElemSetValueF args) =>
+            RenderingActionQueue.Enqueue(() => _renderer_base.GetElement(args.ElementId).SetValueF(args.Role, args.Value));
         private Action CreateItem(RenderAction.Types.CreateItem args) => () =>
         {
             if (args.SharerHash == GlobalDependency.Statics.LocalHash)
